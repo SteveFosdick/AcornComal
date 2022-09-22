@@ -13,6 +13,9 @@ txtoff                 EQU     $0015
 erflag                 EQU     $003F
 pdbugd                 EQU     $0068
 lstkp                  EQU     $006F
+
+brkv                   EQU     $0202
+
 osnewl                 EQU     $FFE7
 oswrch                 EQU     $FFEE
 osword                 EQU     $FFF1
@@ -329,10 +332,10 @@ lang:                  CMP     #$01
                        BNE     L8363
                        LDX     #$FF
                        TXS
-                       LDA     #$BE
-                       LDY     #$80
-                       STA     $0202
-                       STY     $0203
+                       LDA     #>brkhnd
+                       LDY     #<brkhnd
+                       STA     brkv
+                       STY     brkv+1
                        LDY     #$09
                        STY     $0401
                        INY
