@@ -6593,17 +6593,17 @@ FRND:                  JSR     SB3F0
                        JMP     SB304
 LB9D6:                 JSR     SA3F0
                        JMP     SB304
-funtab:                DFW     FFALSE-1, FPI-1, FTRUE-1, FCOUNT-1
-                       DFW     FEOD-1,   FGET-1, FPOS-1, FSIZE-1
-                       DFW     FFREE-1, FVPOS-1, FGETS-1, FLEN-1
-                       DFW     FORD-1, FVAL-1, FACS-1, FASN-1
-                       DFW     FATN-1, FCOS-1, FDEG-1, FEXP-1
-                       DFW     FLN-1, FLOG-1, FRAD-1, FSIN-1
-                       DFW     FSQR-1, FTAN-1, FINT-1, FSGN-1
-                       DFW     FABS-1, FADVAL-1, FEOF-1, FEXT-1
-                       DFW     FINKEY-1, FNOT-1, FUSR-1, FCHRS-1
-                       DFW     FINKEYS-1, FSTRS-1, FRND-1, FPOINT-1
-                       DFW     FMODE-1, FPAGE-1, FTIME-1, FWIDTH-1
+funtab:                DFW     FFALSE-1,  FPI-1,    FTRUE-1,  FCOUNT-1
+                       DFW     FEOD-1,    FGET-1,   FPOS-1,   FSIZE-1
+                       DFW     FFREE-1,   FVPOS-1,  FGETS-1,  FLEN-1
+                       DFW     FORD-1,    FVAL-1,   FACS-1,   FASN-1
+                       DFW     FATN-1,    FCOS-1,   FDEG-1,   FEXP-1
+                       DFW     FLN-1,     FLOG-1,   FRAD-1,   FSIN-1
+                       DFW     FSQR-1,    FTAN-1,   FINT-1,   FSGN-1
+                       DFW     FABS-1,    FADVAL-1, FEOF-1,   FEXT-1
+                       DFW     FINKEY-1,  FNOT-1,   FUSR-1,   FCHRS-1
+                       DFW     FINKEYS-1, FSTRS-1,  FRND-1,   FPOINT-1
+                       DFW     FMODE-1,   FPAGE-1,  FTIME-1,  FWIDTH-1
                        DFW     FZONE-1
 SBA36:                 LDY     $7F
                        BMI     LBA3D
