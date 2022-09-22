@@ -65,8 +65,8 @@ L805F:                 JSR     osnewl
                        JMP     L8038
 S8065:                 JSR     S902F
 L8068:                 LDX     #$00
-                       STX     $68
-                       STA     $3F
+                       STX     pdbugd
+                       STA     erflag
                        LDX     $28
                        BEQ     L8098
                        STX     $3E
@@ -77,7 +77,7 @@ L8068:                 LDX     #$00
                        JSR     S81C1
                        BCS     L808B
 L8084:                 LDA     #$1A
-                       STA     $3F
+                       STA     erflag
                        JSR     S810E
 L808B:                 LDX     #$19
                        LDA     #$5F
@@ -90,10 +90,10 @@ S809A:                 LDA     $3E
                        BMI     L80A9
                        LDY     #$01
                        LDA     $42
-                       STA     ($13),Y
+                       STA     (txtptr),Y
                        INY
                        LDA     $41
-                       STA     ($13),Y
+                       STA     (txtptr),Y
 L80A9:                 JSR     S810E
 S80AC:                 JSR     S81AF
                        LDX     $25
@@ -102,7 +102,7 @@ S80AC:                 JSR     S81AF
                        LDA     #$5E
                        JSR     outchr
                        JMP     S835B
-brkhnd:                STA     $3F
+brkhnd:                STA     erflag
                        LDX     $2D
                        BEQ     L80C8
                        TXS
@@ -110,7 +110,7 @@ brkhnd:                STA     $3F
 L80C8:                 LDY     #$00
                        LDA     ($FD),Y
                        BEQ     L80E4
-                       STA     $3F
+                       STA     erflag
                        BPL     L80E4
                        JSR     S835B
 L80D5:                 INY
@@ -121,7 +121,7 @@ L80D5:                 INY
 L80DF:                 JSR     S835B
                        BCS     L80ED
 L80E4:                 JSR     S810E
-                       LDA     $3F
+                       LDA     erflag
                        CMP     #$16
                        BCC     L80F0
 L80ED:                 JSR     S80AC
@@ -130,13 +130,13 @@ L80F0:                 BIT     $3E
                        LDX     #$00
                        STX     $82
                        BEQ     L810B
-L80FA:                 LDA     $3F
+L80FA:                 LDA     erflag
                        CMP     #$13
                        BNE     L8103
                        JSR     S8A01
-L8103:                 LDX     $13
+L8103:                 LDX     txtptr
                        STX     $80
-                       LDX     $14
+                       LDX     txtptr+1
                        STX     $81
 L810B:                 JMP     L838F
 S810E:                 JSR     S835B
@@ -148,7 +148,7 @@ S810E:                 JSR     S835B
                        STY     $43
                        LDY     #$00
 L811F:                 LDA     $43
-                       CMP     $3F
+                       CMP     erflag
                        BEQ     L8132
 L8125:                 LDA     ($2B),Y
                        PHP
@@ -161,7 +161,7 @@ L8132:                 LDA     ($2B),Y
                        BEQ     L813B
                        JSR     S815D
                        BNE     L8132
-L813B:                 LDA     $3F
+L813B:                 LDA     erflag
                        CMP     #$1D
                        BNE     L8146
                        LDA     $69
@@ -210,7 +210,7 @@ L8195:                 AND     #$7F
                        JSR     outchr
                        LDA     #$20
 L81A0:                 JSR     outchr
-L81A3:                 CPY     $15
+L81A3:                 CPY     txtoff
                        BEQ     L81A9
                        BCS     L81AD
 L81A9:                 LDA     $0B
@@ -223,19 +223,19 @@ S81AF:                 JSR     S832B
                        LDY     #$04
                        BIT     $3E
                        BPL     S81C1
-                       LDA     $14
-                       CMP     $07
+                       LDA     txtptr+1
+                       CMP     page+1
                        BCC     L81D2
 S81C1:                 JSR     S81F6
                        LDY     #$04
                        BIT     $76
                        BMI     L81D2
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        ASL     
                        ORA     #$01
                        JSR     S8347
 L81D2:                 INY
-L81D3:                 LDA     ($13),Y
+L81D3:                 LDA     (txtptr),Y
                        CMP     #$0D
                        BEQ     L815A
                        BIT     $76
@@ -244,7 +244,7 @@ L81D3:                 LDA     ($13),Y
                        BNE     L81E8
                        LDA     #$CB
                        JSR     S815D
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
 L81E8:                 JSR     S815D
                        LDA     $67
                        JSR     S8AB2
@@ -254,10 +254,10 @@ L81E8:                 JSR     S815D
                        BNE     L81D3
 S81F6:                 LDX     #$05
 S81F8:                 LDY     #$02
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        STA     $41
                        DEY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        STA     $42
                        TXA
                        DFB     $2C          ; BIT - skips the next instruction.
@@ -367,10 +367,10 @@ rdline:                SEC
                        ROR     $3E
                        LDA     #$01
                        LDY     #$07
-                       STA     $13
-                       STY     $14
+                       STA     txtptr
+                       STY     txtptr+1
                        LDX     #$00
-                       STX     $15
+                       STX     txtoff
 S83D5:                 STA     $06A0
                        STY     $06A1
                        LDX     #$7F
@@ -403,18 +403,18 @@ toklin:                JSR     S8B28
                        JSR     S8AF6
                        LDA     $19
                        SEC
-                       SBC     $13
+                       SBC     txtptr
                        CLC
                        ADC     #$05
                        SEC
 L8424:                 PHP
-                       STA     $15
-                       LDA     $13
+                       STA     txtoff
+                       LDA     txtptr
                        SEC
                        SBC     #$05
-                       STA     $13
+                       STA     txtptr
                        BCS     L8432
-                       DEC     $14
+                       DEC     txtptr+1
 L8432:                 PLP
                        RTS
 L8434:                 JSR     S8AF6
@@ -448,7 +448,7 @@ L8457:                 LDY     #$00
                        STA     ($26),Y
                        INY
 L846D:                 INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        STA     ($26),Y
                        CPY     $6C
                        BNE     L846D
@@ -468,9 +468,9 @@ L8479:                 LDA     $6C
 L8490:                 LDA     ($2B),Y
                        STA     ($2B,X)
                        JSR     S89C4
-                       LDA     $0C
+                       LDA     prgtop
                        CMP     $2B
-                       LDA     $0D
+                       LDA     prgtop+1
                        SBC     $2C
                        BCS     L8490
                        LDA     $6C
@@ -478,25 +478,25 @@ L8490:                 LDA     ($2B),Y
                        BNE     L8457
 S84A7:                 TAY
                        CLC
-                       ADC     $0C
+                       ADC     prgtop
                        STA     $0C
                        BCC     L84B1
-                       INC     $0D
-L84B1:                 LDA     $0C
-                       CMP     $00
-                       LDA     $0D
-                       SBC     $01
+                       INC     prgtop+1
+L84B1:                 LDA     prgtop
+                       CMP     himem
+                       LDA     prgtop+1
+                       SBC     himem+1
                        BCS     L84D4
                        LDX     #$00
-L84BD:                 LDA     ($0C,X)
-                       STA     ($0C),Y
-                       LDA     $0C
+L84BD:                 LDA     (prgtop,X)
+                       STA     (prgtop),Y
+                       LDA     prgtop
                        BNE     L84C7
-                       DEC     $0D
-L84C7:                 DEC     $0C
-                       LDA     $0C
+                       DEC     prgtop+1
+L84C7:                 DEC     prgtop
+                       LDA     prgtop
                        CMP     $26
-                       LDA     $0D
+                       LDA     prgtop+1
                        SBC     $27
                        BCS     L84BD
                        RTS
@@ -546,7 +546,7 @@ execim:                LDA     $6C
 S852B:                 STA     $69
                        TAY
                        BMI     L8539
-                       DEC     $15
+                       DEC     txtoff
                        CMP     #$2A
                        BEQ     L8551
                        JMP     LAE1E
@@ -562,10 +562,10 @@ COSCLI:                JSR     S86F2
                        LDX     #$00
                        LDY     #$06
                        BNE     L855C
-L8551:                 LDY     $14
-                       LDA     $13
+L8551:                 LDY     txtptr+1
+                       LDA     txtptr
                        CLC
-                       ADC     $15
+                       ADC     txtoff
                        BCC     L855B
                        INY
 L855B:                 TAX
@@ -573,11 +573,11 @@ L855C:                 JSR     $FFF7
                        CLC
                        RTS
 CONT:                  LDA     $80
-                       STA     $13
+                       STA     txtptr
                        LDA     $81
-                       STA     $14
+                       STA     txtptr+1
                        LDA     $82
-                       STA     $15
+                       STA     txtoff
                        BEQ     L857E
                        LSR     $3E
                        CMP     #$07
@@ -605,7 +605,7 @@ L8589:                 LDY     #$00
                        JSR     S8A14
                        BCC     L8589
 L85A1:                 JSR     L85AB
-                       STX     $68
+                       STX     pdbugd
                        DEX
                        STX     $3E
                        BRK
@@ -613,16 +613,16 @@ L85AA:                 DFB     $15                                    ; .
 L85AB:                 CLC
                        LDA     $26
                        ADC     #$02
-                       STA     $0C
+                       STA     prgtop
                        TXA
                        ADC     $27
-                       STA     $0D
+                       STA     prgtop+1
                        CLC
                        RTS
 OLD:                   JSR     NEW
                        LDA     #$00
                        LDY     #$01
-                       STA     ($06),Y
+                       STA     (page),Y
                        JMP     L8681
 EDIT:                  SEC
                        BIT     $18
@@ -647,10 +647,10 @@ L85E8:                 JSR     chkesc
 L85F1:                 BMI     L8600
                        LDY     #$02
                        LDA     $1C
-                       CMP     ($13),Y
+                       CMP     (txtptr),Y
                        DEY
                        LDA     $1D
-                       SBC     ($13),Y
+                       SBC     (txtptr),Y
                        BCS     L85E8
 L8600:                 RTS
 RENUM:                 JSR     S84D8
@@ -658,14 +658,14 @@ RENUM:                 JSR     S84D8
                        STX     $3E
                        JSR     S8F46
 L860B:                 LDY     #$01
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        BPL     L8612
                        RTS
 L8612:                 LDA     $3B
-                       STA     ($13),Y
+                       STA     (txtptr),Y
                        INY
                        LDA     $3A
-                       STA     ($13),Y
+                       STA     (txtptr),Y
                        JSR     S862C
                        BMI     L8625
                        JSR     S8A01
@@ -692,7 +692,7 @@ DEL:                   JSR     S8582
                        LDA     $6A
                        CMP     #$2C
                        BNE     L865D
-                       INC     $15
+                       INC     txtoff
                        JSR     S8A27
                        JSR     S89E0
                        BNE     L8660
@@ -708,18 +708,18 @@ L866A:                 LDA     ($26,X)
                        INC     $26
                        BNE     L8677
                        INC     $27
-L8677:                 LDA     $0C
+L8677:                 LDA     prgtop
                        CMP     $26
-                       LDA     $0D
+                       LDA     prgtop+1
                        SBC     $27
                        BCS     L866A
 L8681:                 LDA     #$00
                        STA     $82
-                       STA     $68
+                       STA     pdbugd
                        JSR     S8582
                        JMP     LAA63
 LOAD:                  JSR     S86CD
-                       LDA     $07
+                       LDA     page+1
                        STA     $0683
                        LDA     #$00
                        STA     $0686
@@ -728,10 +728,10 @@ L869C:                 JSR     $FFDD
                        JMP     L8681
 SAVE:                  JSR     S86CD
                        JSR     S8582
-                       LDA     $07
+                       LDA     page+1
                        STA     $068B
-                       LDY     $0D
-                       LDX     $0C
+                       LDY     prgtop+1
+                       LDX     prgtop
                        INX
                        STX     $068E
                        BNE     L86B8
@@ -752,7 +752,7 @@ S86CD:                 LDX     #$11
 L86D3:                 STA     $0680,X
                        DEX
                        BPL     L86D3
-                       LDA     $07
+                       LDA     page+1
                        STA     $0683
                        LDA     #$8F
                        STA     $0686
@@ -790,33 +790,33 @@ L872A:                 JSR     S843B
                        BPL     L8709
                        STA     $3E
                        LDA     #$21
-                       STA     $3F
+                       STA     erflag
                        JMP     S810E
 RUN:                   CPX     #$0D
                        BEQ     L8742
                        JSR     LOAD
 L8742:                 LDX     #$00
                        STX     $3E
-                       STX     $12
-                       STX     $6F
+                       STX     closed
+                       STX     lstkp
                        LDX     #$FD
                        TXS
                        LDA     #$FF
                        JSR     S8D47
-                       LDA     $68
+                       LDA     pdbugd
                        BEQ     L8702
                        JSR     LAA63
                        JSR     S8F46
 L875C:                 LDY     #$06
-                       STY     $15
+                       STY     txtoff
                        STY     $82
                        JSR     chkesc
                        LDY     #$01
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        BPL     L876E
                        JMP     LBF1D
 L876E:                 LDY     #$05
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        JSR     S852B
                        BCS     L875C
 L8777:                 JSR     S8A01
@@ -868,7 +868,7 @@ isxuc:                 CMP     #$41
                        BCS     L8992
                        CLC
                        RTS
-S89AF:                 INC     $15
+S89AF:                 INC     txtoff
 S89B1:                 JSR     LB308
 S89B4:                 LDA     $6A
 S89B6:                 CMP     #$0D
@@ -884,16 +884,16 @@ S89C4:                 INC     $2B
                        INC     $2C
 L89CA:                 LDA     ($2B),Y
                        RTS
-S89CD:                 LDA     $15
+S89CD:                 LDA     txtoff
                        CLC
-                       ADC     $13
-                       STA     $13
+                       ADC     txtptr
+                       STA     txtptr
                        LDA     #$00
                        TAY
-                       ADC     $14
-                       STA     $14
-                       LDA     ($13),Y
-                       STY     $15
+                       ADC     txtptr+1
+                       STA     txtptr+1
+                       LDA     (txtptr),Y
+                       STY     txtoff
                        RTS
 S89E0:                 JSR     S8F43
                        BEQ     L89E8
@@ -913,15 +913,15 @@ L89E8:                 LDY     #$01
 L89FE:                 LDA     #$01
 L8A00:                 RTS
 S8A01:                 LDY     #$03
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CLC
-                       ADC     $13
-                       STA     $13
+                       ADC     txtptr
+                       STA     txtptr
                        BCC     L8A0F
-                       INC     $14
+                       INC     txtptr+1
                        CLC
 L8A0F:                 LDY     #$01
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        RTS
 S8A14:                 LDY     #$03
                        LDA     ($26),Y
@@ -963,9 +963,9 @@ L8A36:                 LDA     $41
                        BCC     L8A61
                        INC     $42
                        BMI     L8A70
-L8A61:                 INC     $15
-                       LDY     $15
-                       LDA     ($13),Y
+L8A61:                 INC     txtoff
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        STA     $6A
                        JSR     isdig
                        BCC     L8A36
@@ -998,13 +998,13 @@ L8A96:                 CMP     $7D
                        BNE     L8A8C
                        BEQ     L8A7A
 S8AA0:                 LDA     $26
-                       STA     $13
+                       STA     txtptr
                        LDA     $27
-                       STA     $14
+                       STA     txtptr+1
                        RTS
-S8AA9:                 LDA     $13
+S8AA9:                 LDA     txtptr
                        STA     $26
-                       LDA     $14
+                       LDA     txtptr+1
                        STA     $27
                        RTS
 S8AB2:                 CMP     #$ED
@@ -1047,11 +1047,11 @@ S8AE5:                 STX     $67
                        TAX
                        PLA
                        TAY
-                       LDA     $15
+                       LDA     txtoff
                        PHA
-                       LDA     $14
+                       LDA     txtptr+1
                        PHA
-                       LDA     $13
+                       LDA     txtptr
                        JMP     L8ACB
 S8AF6:                 STX     $67
                        PLA
@@ -1059,11 +1059,11 @@ S8AF6:                 STX     $67
                        PLA
                        TAY
                        PLA
-                       STA     $13
+                       STA     txtptr
                        PLA
-                       STA     $14
+                       STA     txtptr+1
                        PLA
-                       STA     $15
+                       STA     txtoff
                        JMP     L8ACC
 S8B08:                 LDY     $28
                        DEY
@@ -1072,16 +1072,16 @@ S8B08:                 LDY     $28
                        CMP     #$28
                        RTS
 S8B11:                 JSR     LB308
-                       INC     $15
+                       INC     txtoff
                        RTS
-S8B17:                 LDA     $13
+S8B17:                 LDA     txtptr
                        STA     $2B
                        LDA     #$00
                        STA     $6D
-                       STA     $15
+                       STA     txtoff
                        TAX
                        TAY
-                       LDA     $14
+                       LDA     txtptr+1
                        STA     $2C
                        RTS
 S8B28:                 JSR     S8B17
@@ -1090,9 +1090,9 @@ L8B2B:                 LDA     ($2B),Y
                        BEQ     L8B7E
                        CMP     #$20
                        BNE     L8B40
-                       INC     $13
+                       INC     txtptr
                        BNE     L8B3B
-                       INC     $14
+                       INC     txtptr+1
 L8B3B:                 JSR     S89C4
                        BCS     L8B2B
 L8B40:                 LDY     #$00
@@ -1126,9 +1126,9 @@ L8B67:                 DEY
                        CLC
                        ADC     $2B
                        SEC
-                       SBC     $15
+                       SBC     txtoff
                        SEC
-                       SBC     $13
+                       SBC     txtptr
                        DFB     $24          ; BIT - skips the next instruction.
 L8B7E:                 TYA
                        STA     $6C
@@ -1294,25 +1294,25 @@ L8D2D:                 LDA     #$1B
 L8D35:                 LDA     #$E8
                        CMP     $69
                        BCS     L8D40
-                       CPX     $6F
+                       CPX     lstkp
                        BNE     L8D2D
                        CLC
 L8D40:                 LDA     $6B
                        SBC     #$00
                        JMP     L8DD6
-S8D47:                 LDX     $68
+S8D47:                 LDX     pdbugd
                        BEQ     L8D4E
                        RTS
 DEBUG:                 LDA     #$FF
 L8D4E:                 STA     $28
                        JSR     S8582
                        JSR     S8F43
-                       STX     $6F
+                       STX     lstkp
                        STX     $0500
                        STX     $20
                        STX     $6B
                        DEX
-                       STX     $68
+                       STX     pdbugd
                        LDA     #$E4
                        STA     $38
                        LDA     #$04
@@ -1346,17 +1346,17 @@ L8D76:                 LDX     #$E7
 L8DA2:                 JSR     S8AB2
                        BNE     L8DAA
                        JSR     S8ECE
-L8DAA:                 LDA     $6F
+L8DAA:                 LDA     lstkp
                        CLC
                        ADC     #$03
                        BCS     L8DDF
-                       STA     $6F
+                       STA     lstkp
                        LDX     $69
                        LDA     D8F5D-$E7,X
                        ADC     $20
                        STA     $20
                        BCS     L8DDF
-                       LDX     $6F
+                       LDX     lstkp
                        LDA     $27
                        STA     $04FF,X
                        LDA     $26
@@ -1405,7 +1405,7 @@ L8E1A:                 LDA     #$F3
                        LDY     $78
                        JSR     S8F30
                        JSR     S9026
-                       LDX     $6F
+                       LDX     lstkp
                        LDA     $04FE,X
                        STA     $26
                        LDA     $04FF,X
@@ -1456,9 +1456,9 @@ L8E8C:                 LDA     #$19
                        JSR     S8065
 L8E91:                 JSR     S8582
                        JSR     S902F
-L8E97:                 DEC     $6F
-                       DEC     $6F
-                       DEC     $6F
+L8E97:                 DEC     lstkp
+                       DEC     lstkp
+                       DEC     lstkp
                        DEC     $6B
                        LDX     $69
                        JSR     S8EB4
@@ -1475,7 +1475,7 @@ S8EB4:                 LDA     $20
                        SBC     D8F5D-$E7,X
                        STA     $20
                        RTS
-S8EBD:                 LDX     $6F
+S8EBD:                 LDX     lstkp
                        BEQ     L8ECB
 L8EC1:                 CMP     $0500,X
                        BEQ     L8ECC
@@ -1488,7 +1488,7 @@ L8ECC:                 TXA
                        RTS
 S8ECE:                 LDX     #$00
 L8ED0:                 STX     $77
-L8ED2:                 CPX     $6F
+L8ED2:                 CPX     lstkp
                        BCS     L8EF9
                        INX
                        INX
@@ -1496,9 +1496,9 @@ L8ED2:                 CPX     $6F
                        TXA
                        PHA
                        LDA     $04FE,X
-                       STA     $13
+                       STA     txtptr
                        LDA     $04FF,X
-                       STA     $14
+                       STA     txtptr+1
                        LDA     $0500,X
                        TAX
                        JSR     S8EB4
@@ -1514,7 +1514,7 @@ L8EF9:                 CPX     $77
                        LDA     #$18
                        JSR     L8068
 L8F02:                 LDA     $77
-                       STA     $6F
+                       STA     lstkp
 L8F06:                 CLC
                        RTS
 S8F08:                 INY
@@ -1553,7 +1553,7 @@ S8F33:                 LDX     #$29
 S8F43:                 LDX     #$26
                        DFB     $2C          ; BIT - skips the next instruction.
 S8F46:                 LDX     #$13
-                       LDA     $07
+                       LDA     page+1
                        STA     $01,X
                        LDA     #$00
                        STA     $00,X
@@ -1776,11 +1776,11 @@ D9315:                 DFB     $3A, $2B, $9D, $62, $62, $AA, $9D, $9D ; :+.bb...
                        DFB     $96, $A9, $20, $39, $A4, $90, $F0, $02 ; .. 9....
                        DFB     $D0, $10                               ; ..
 L93AF:                 LDA     #$1B
-                       STA     $3F
+                       STA     erflag
                        SEC
                        RTS
 S93B5:                 LDA     #$16
-                       STA     $3F
+                       STA     erflag
                        JSR     LB308
                        JSR     S963F
                        LDA     $3E
@@ -1789,15 +1789,15 @@ S93B5:                 LDA     #$16
                        LDA     D90A4,Y
                        AND     #$10
                        BEQ     L93CF
-                       INC     $15
+                       INC     txtoff
 L93CF:                 LDA     D906E,Y
 L93D2:                 TAY
-S93D3:                 LDA     $15
+S93D3:                 LDA     txtoff
                        PHA
                        TYA
                        PHA
-                       LDY     $15
-                       LDA     ($13),Y
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        STA     $6A
                        PLA
                        PHA
@@ -1806,7 +1806,7 @@ S93D3:                 LDA     $15
                        CPX     #$20
                        BCS     L93EE
                        LDA     #$1C
-                       STA     $3F
+                       STA     erflag
                        SEC
                        PLA
                        PLA
@@ -1854,7 +1854,7 @@ L943D:                 CPX     #$CF
                        BEQ     L9447
                        CPX     #$D0
                        BEQ     L9447
-                       STA     $15
+                       STA     txtoff
 L9447:                 TXA
                        JMP     L93D2
 S944B:                 JMP     ($0034)
@@ -1863,7 +1863,7 @@ L944E:                 LDX     D9222,Y
 L9454:                 SEC
                        SBC     $34
                        BNE     L9420
-                       INC     $15
+                       INC     txtoff
                        BNE     L9420
 L945D:                 LDY     $34
                        JSR     S93D3
@@ -1881,12 +1881,12 @@ L945D:                 LDY     $34
                        BIT     $18A0
                        BIT     $99A0
                        LDX     #$FF
-                       DEC     $15
+                       DEC     txtoff
                        TYA
                        PHA
                        TXA
                        BEQ     $94A0
-                       INC     $15
+                       INC     txtoff
                        PHA
                        JSR     S93D3
                        BCS     $949C
@@ -1917,7 +1917,7 @@ L945D:                 LDY     $34
                        BNE     $947D
                        JSR     isxdig
                        BCS     $94BA
-                       INC     $15
+                       INC     txtoff
                        RTS
                        JSR     isdig
                        JMP     $94B6
@@ -1936,7 +1936,7 @@ L945D:                 LDY     $34
                        JSR     LB308
                        STY     $2C
                        TAX
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     $90DA,X
                        BNE     $94ED
                        INY
@@ -1963,9 +1963,9 @@ L945D:                 LDY     $34
                        JMP     $961B
                        CMP     #$3A
                        BNE     $9501
-                       LDY     $15
+                       LDY     txtoff
                        INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$3D
                        BNE     $9501
                        BEQ     $9540
@@ -1973,26 +1973,26 @@ L945D:                 LDY     $34
                        BNE     $9512
                        LDA     #$96
                        JSR     $9622
-                       INC     $15
+                       INC     txtoff
                        CLC
                        RTS
-                       LDY     $15
+                       LDY     txtoff
                        INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$2D
                        BEQ     $9540
-                       LDY     $15
+                       LDY     txtoff
                        INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$2B
                        BNE     $9501
                        DEY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$3A
                        BNE     $9501
                        LDA     #$96
-                       STA     ($13),Y
-                       INC     $15
+                       STA     (txtptr),Y
+                       INC     txtoff
                        BNE     $952A
                        LDA     $3E
                        ASL     
@@ -2047,8 +2047,8 @@ L945D:                 LDY     $34
                        RTS
                        JSR     $95C0
                        BIT     $15E6
-                       LDY     $15
-                       LDA     ($13),Y
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        CMP     #$20
                        BEQ     $95C0
                        CMP     #$22
@@ -2057,7 +2057,7 @@ L945D:                 LDY     $34
                        BNE     $95AD
                        LDA     #$22
                        JMP     $9622
-                       INC     $15
+                       INC     txtoff
                        JSR     S963F
                        LDA     D90A4,Y
                        AND     #$0F
@@ -2068,25 +2068,25 @@ L945D:                 LDY     $34
                        BNE     $95F2
                        CLC
                        RTS
-                       LDY     $15
+                       LDY     txtoff
                        CMP     #$22
                        BEQ     $95FA
                        LDX     #$FF
                        BIT     $C8
                        INX
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        JSR     S8AB9
                        BNE     $95E4
-                       STY     $15
+                       STY     txtoff
                        TXA
                        BNE     $95D9
                        SEC
                        RTS
                        CMP     #$22
                        BNE     L9653
-                       LDY     $15
+                       LDY     txtoff
                        INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$22
                        BEQ     $9607
                        CMP     #$0D
@@ -2094,10 +2094,10 @@ L945D:                 LDY     $34
                        SEC
                        RTS
                        INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$22
                        BEQ     $95FA
-                       STY     $15
+                       STY     txtoff
                        CLC
                        RTS
                        LDX     #$FF
@@ -2109,24 +2109,24 @@ L945D:                 LDY     $34
                        JSR     $9622
                        PLA
                        TAX
-                       LDY     $15
+                       LDY     txtoff
                        TYA
                        PHA
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        PHA
                        TXA
-                       STA     ($13),Y
+                       STA     (txtptr),Y
                        PLA
                        INY
                        TAX
                        CMP     #$0D
                        BNE     $9627
-                       STA     ($13),Y
+                       STA     (txtptr),Y
                        PLA
                        TAY
                        INY
                        INC     $6C
-                       INC     $15
+                       INC     txtoff
                        CLC
                        RTS
 S963F:                 LDA     $6A
@@ -2143,30 +2143,30 @@ L9653:                 SEC
                        RTS
 L9655:                 CLC
                        RTS
-                       LDA     $15
+                       LDA     txtoff
                        PHA
                        TAY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        LDY     #$84
                        CMP     #$01
                        BEQ     $9679
                        JSR     S93D3
                        PLA
                        BCS     $9676
-                       LDX     $15
-                       STA     $15
+                       LDX     txtoff
+                       STA     txtoff
                        INX
                        TXA
                        PHA
                        LDA     #$01
                        JSR     $9622
                        PLA
-                       STA     $15
+                       STA     txtoff
                        RTS
                        PLA
-                       INC     $15
+                       INC     txtoff
                        JMP     S93D3
-                       INC     $15
+                       INC     txtoff
                        JMP     $952A
 L9684:                 BRK
 L9685:                 DFB     $21                                    ; !
@@ -2175,7 +2175,7 @@ S9686:                 JSR     SB2EB
                        PHA
                        JSR     SA3CE
                        JSR     SA4BA
-                       INC     $15
+                       INC     txtoff
                        JSR     expr6
                        JSR     SB2EB
                        LDX     #$52
@@ -2269,11 +2269,11 @@ S9738:                 PHP
                        PLP
                        RTS
 S9740:                 LDY     #$00
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $4F
                        BEQ     L9753
                        TAY
-L9749:                 LDA     ($04),Y
+L9749:                 LDA     (aestkp),Y
                        STA     $05FF,Y
                        DEY
                        BNE     L9749
@@ -2281,10 +2281,10 @@ L9749:                 LDA     ($04),Y
 L9753:                 SEC
                        DFB     $24          ; BIT - skip the next instruction.
 S9755:                 CLC
-                       ADC     $04
-                       STA     $04
+                       ADC     aestkp
+                       STA     aestkp
                        BCC     L975F
-                       INC     $05
+                       INC     aestkp+1
                        CLC
 L975F:                 RTS
 S9760:                 LDA     $44
@@ -2539,7 +2539,7 @@ L9959:                 CLC
                        JSR     S9ABD
                        LDA     #$FF
                        RTS
-S9962:                 LDA     ($13),Y
+S9962:                 LDA     (txtptr),Y
 S9964:                 CMP     #$3A
                        BCS     L996B
                        SBC     #$2F
@@ -2551,15 +2551,15 @@ S996D:                 LDX     #$07
 L9971:                 STA     $47,X
                        DEX
                        BNE     L9971
-                       LDY     $15
-                       LDA     ($13),Y
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        CMP     #$2E
                        BEQ     L998C
                        JSR     S9962
                        BCC     L9959
                        STA     $4C
 L9985:                 INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$2E
                        BNE     L9994
 L998C:                 LDA     $4D
@@ -2597,7 +2597,7 @@ L99B5:                 JSR     L9A7A
 L99CE:                 JSR     S9A2D
                        ADC     $4E
                        STA     $4E
-L99D5:                 STY     $15
+L99D5:                 STY     txtoff
                        LDA     $4E
                        ORA     $4D
                        BEQ     L9A0C
@@ -2642,7 +2642,7 @@ L9A26:                 JSR     S9A38
                        SEC
                        RTS
 S9A2D:                 INY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$2D
                        BEQ     L9A26
                        CMP     #$2B
@@ -3876,7 +3876,7 @@ SA471:                 LDA     #$05
                        JSR     SA505
                        LDY     #$00
                        LDA     $47
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        INY
                        LDA     $45
                        AND     #$80
@@ -3884,88 +3884,88 @@ SA471:                 LDA     #$05
                        LDA     $48
                        AND     #$7F
                        ORA     $45
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        INY
                        LDA     $49
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        INY
                        LDA     $4A
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        INY
                        LDA     $4B
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        LDA     #$FF
                        RTS
 SA49D:                 JSR     SA4AC
-                       LDA     $04
+                       LDA     aestkp
                        CLC
                        ADC     #$05
-                       STA     $04
+                       STA     aestkp
                        BCC     LA4AB
-                       INC     $05
+                       INC     aestkp+1
 LA4AB:                 RTS
-SA4AC:                 LDA     $04
+SA4AC:                 LDA     aestkp
                        STA     $62
-                       LDA     $05
+                       LDA     aestkp+1
                        STA     $63
                        RTS
 SA4B5:                 JSR     SB2EB
-                       INC     $15
+                       INC     txtoff
 SA4BA:                 LDA     #$04
                        JSR     SA505
                        LDY     #$03
                        LDA     $44
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        DEY
                        LDA     $43
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        DEY
 SA4CB:                 LDA     $42
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        DEY
                        LDA     $41
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        RTS
 SA4D5:                 LDY     #$03
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $44
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $43
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $42
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $41
                        JMP     S9738
 SA4ED:                 LDY     #$03
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $03,X
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $02,X
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $01,X
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $00,X
                        JMP     S9738
 SA505:                 SEC
                        DFB     $24          ; BIT - skips the next instruction.
 SA507:                 CLC
                        STA     $34
-                       LDA     $04
+                       LDA     aestkp
                        SBC     $34
-SA50E:                 STA     $04
+SA50E:                 STA     aestkp
                        BCS     LA514
-                       DEC     $05
-LA514:                 LDY     $05
-SA516:                 CPY     $09
+                       DEC     aestkp+1
+LA514:                 LDY     aestkp+1
+SA516:                 CPY     vartop+1
                        BCC     LA520
                        BNE     LA532
-                       CMP     $08
+                       CMP     vartop
                        BCS     LA532
 LA520:                 BRK
 LA521:                 DFB     $14                                    ; .
@@ -3986,7 +3986,7 @@ LA53C:                 LDA     $0400,Y
                        PHA
                        DEY
                        BPL     LA53C
-                       DEC     $15
+                       DEC     txtoff
 LA545:                 LDX     #$00
 LA547:                 STX     $70
 LA549:                 JSR     SB304
@@ -4091,7 +4091,7 @@ LA610:                 CLC
 LA61C:                 PLA
                        STA     $70
                        JSR     L8221
-                       DEC     $15
+                       DEC     txtoff
                        JMP     LA545
 SA627:                 JSR     S8AE5
                        TSX
@@ -4126,17 +4126,17 @@ LA65B:                 JSR     SBEF4
 LA668:                 BRK
 LA669:                 DFB     $1B                                    ; .
 LA66A:                 TAX
-                       LDY     $15
-                       LDA     ($13),Y
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        CMP     #$22
                        BEQ     LA684
-LA673:                 LDY     $15
-                       LDA     ($13),Y
+LA673:                 LDY     txtoff
+                       LDA     (txtptr),Y
                        JSR     S8AB9
                        BEQ     LA659
                        STA     $0600,X
                        INX
-                       INC     $15
+                       INC     txtoff
                        BNE     LA673
 LA684:                 JSR     SB7A2
                        BCC     LA65B
@@ -4149,9 +4149,9 @@ LA68D:                 PLA
                        STA     $2D
                        RTS
 LA695:                 PLA
-                       STA     $15
+                       STA     txtoff
                        LDA     #$21
-                       STA     $3F
+                       STA     erflag
                        SEC
                        ROR     $3E
                        JSR     S810E
@@ -4161,7 +4161,7 @@ INPUT:                 LDA     #$19
                        STA     $18
                        CPX     #$8D
                        BEQ     LA6FE
-                       LDA     $15
+                       LDA     txtoff
                        PHA
                        CPX     #$22
                        BEQ     LA6BD
@@ -4217,7 +4217,7 @@ LA6FE:                 BEQ     LA75E
                        SBC     #$00
                        STA     $2E
                        INY
-                       STY     $15
+                       STY     txtoff
                        JSR     S8AA0
 LA72C:                 JSR     SBEF4
                        JSR     S8B11
@@ -4290,7 +4290,7 @@ LA7B8:                 LDX     $40
 LA7BC:                 JSR     SAF0F
                        JSR     S89B1
                        BEQ     LA7C9
-                       INC     $15
+                       INC     txtoff
                        JMP     LA761
 LA7C9:                 JMP     LA93C
 LA7CC:                 INX
@@ -4308,7 +4308,7 @@ SA7E3:                 LDY     $75
                        BCC     LA809
                        BRK
 LA7EB:                 DFB     $2A                                    ; *
-LA7EC:                 INC     $15
+LA7EC:                 INC     txtoff
 SA7EE:                 JSR     LB308
                        CPX     #$2B
                        BEQ     LA7EC
@@ -4542,7 +4542,7 @@ LA9B3:                 JSR     SA4BA
                        STA     $42
                        STA     $74
                        JSR     S9760
-                       INC     $15
+                       INC     txtoff
 SA9CE:                 LDA     #$01
 SA9D0:                 LDX     #$41
                        LDY     $75
@@ -4602,32 +4602,32 @@ CLEAR:                 BIT     $3E
                        JMP     L8681
 SAA41:                 LDA     #$83
                        JSR     osbyte
-                       STY     $07
-                       STX     $06
+                       STY     page+1
+                       STX     page
 NEW:                   LDA     #$02
-                       STA     $0C
-                       LDY     $07
-                       STY     $0D
+                       STA     prgtop
+                       LDY     page+1
+                       STY     prgtop+1
                        LDY     #$00
                        STY     $82
                        STY     $7F
-                       STY     $68
+                       STY     pdbugd
                        LDA     #$0D
-                       STA     ($06),Y
+                       STA     (page),Y
                        INY
                        LDA     #$FF
-                       STA     ($06),Y
-LAA63:                 LDA     $0C
-                       STA     $08
-                       STA     $02
-                       LDA     $0D
-                       STA     $09
-                       STA     $03
+                       STA     (page),Y
+LAA63:                 LDA     prgtop
+                       STA     vartop
+                       STA     lomem
+                       LDA     prgtop+1
+                       STA     vartop+1
+                       STA     lomem+1
                        LDA     #$84
                        JSR     osbyte
                        JSR     SAAA5
                        LDA     #$00
-                       STA     $12
+                       STA     closed
                        LDY     #$E9
                        DFB     $2C          ; BIT - skip the next instruction.
 LAA7E:                 LDY     #$B5
@@ -4649,14 +4649,14 @@ LAA82:                 STA     $0400,Y
                        LDA     #$56
                        STA     $31
 LAAA2:                 JMP     LA743
-SAAA5:                 STY     $01
-                       STY     $05
-                       STY     $0F
-                       STY     $11
-                       STX     $00
-                       STX     $04
-                       STX     $0E
-                       STX     $10
+SAAA5:                 STY     himem+1
+                       STY     aestkp+1
+                       STY     locall+1
+                       STY     localh+1
+                       STX     himem
+                       STX     aestkp
+                       STX     locall
+                       STX     localh
                        RTS
 SAAB6:                 LDA     #$00
                        DFB     $2C          ; BIT - skips the next instruction.
@@ -4681,7 +4681,7 @@ SAAB9:                 LDA     #$FF
                        STA     $62
                        LDA     #$04
                        STA     $63
-                       INC     $15
+                       INC     txtoff
                        JMP     SB304
 LAAE6:                 TXA
                        ASL     
@@ -4699,16 +4699,16 @@ LAAFC:                 SEC
 LAAFE:                 JSR     SAD86
                        BEQ     LAAF5
 LAB03:                 LDA     $62
-                       CMP     $08
+                       CMP     vartop
                        LDA     $63
-                       SBC     $09
+                       SBC     vartop+1
                        BCC     LAB17
                        LDA     $62
-                       CMP     $0E
+                       CMP     locall
                        LDA     $63
-                       SBC     $0F
+                       SBC     locall+1
                        BCC     LAAFE
-LAB17:                 LDA     $12
+LAB17:                 LDA     closed
                        BEQ     LAB20
                        JSR     SAD3F
                        BCC     LAAFE
@@ -4819,8 +4819,8 @@ SABF5:                 LDY     $28
 SABF7:                 DEY
 SABF8:                 TYA
                        CLC
-                       ADC     $15
-                       STA     $15
+                       ADC     txtoff
+                       STA     txtoff
                        LDA     $40
                        RTS
 LAC01:                 INY
@@ -4831,10 +4831,10 @@ LAC01:                 INY
                        BNE     LABF2
                        JMP     LAAFE
 SAC0D:                 JSR     SAC1D
-LAC10:                 LDA     $04
-                       STA     $0E
-                       LDA     $05
-                       STA     $0F
+LAC10:                 LDA     aestkp
+                       STA     locall
+                       LDA     aestkp+1
+                       STA     locall+1
                        RTS
 LAC19:                 BRK
 LAC1A:                 DFB     $20                                    ;  
@@ -4866,21 +4866,21 @@ LAC45:                 CLC
                        ADC     $24
                        STA     $24
                        CLC
-                       LDA     $08
+                       LDA     vartop
                        ADC     $24
                        TAX
-                       LDY     $09
+                       LDY     vartop+1
                        BCC     LAC58
                        INY
-LAC58:                 CPX     $04
+LAC58:                 CPX     aestkp
                        TYA
-                       SBC     $05
+                       SBC     aestkp+1
                        BCS     LAC1B
                        JSR     SAD7D
-                       LDA     $12
+                       LDA     closed
                        BNE     LAC6C
-                       STX     $08
-                       STY     $09
+                       STX     vartop
+                       STY     vartop+1
                        BEQ     LAC74
 LAC6C:                 LDA     $24
                        JSR     SA505
@@ -4900,7 +4900,7 @@ SAC7E:                 CLC
                        STA     $63
                        RTS
 LAC8C:                 LDA     #$ED
-                       LDX     $68
+                       LDX     pdbugd
                        BNE     LAC94
                        SEC
                        RTS
@@ -4963,10 +4963,10 @@ LACF4:                 JSR     S897D
 LACFB:                 CMP     #$28
                        BNE     LACF4
                        RTS
-SAD00:                 LDA     $15
-                       LDX     $14
+SAD00:                 LDA     txtoff
+                       LDX     txtptr+1
                        CLC
-                       ADC     $13
+                       ADC     txtptr
                        TAY
                        BNE     LAD0B
                        DEX
@@ -5000,14 +5000,14 @@ LAD37:                 CMP     #$28
 LAD3C:                 STY     $28
                        RTS
 SAD3F:                 LDA     $62
-                       CMP     $0E
+                       CMP     locall
                        LDA     $63
-                       SBC     $0F
+                       SBC     locall+1
                        BCC     LAD56
                        LDA     $62
-                       CMP     $10
+                       CMP     localh
                        LDA     $63
-                       SBC     $11
+                       SBC     localh+1
                        BCS     LAD55
                        SEC
                        RTS
@@ -5030,9 +5030,9 @@ SAD74:                 INC     $62
                        INC     $63
 LAD7A:                 LDA     ($62),Y
                        RTS
-SAD7D:                 LDA     $09
+SAD7D:                 LDA     vartop+1
                        STA     $63
-                       LDA     $08
+                       LDA     vartop
                        STA     $62
                        RTS
 SAD86:                 LDY     #$01
@@ -5097,11 +5097,11 @@ LADE5:                 LDA     $41
                        JMP     LAE0E
 LADF2:                 BRK
 LADF3:                 DFB     $1B                                    ; .
-LADF4:                 LDA     $10
-                       CMP     $00
+LADF4:                 LDA     localh
+                       CMP     himem
                        BNE     LADF2
-                       LDA     $11
-                       CMP     $01
+                       LDA     localh+1
+                       CMP     himem+1
                        BNE     LADF2
                        LDA     #$85
                        LDX     $41
@@ -5115,7 +5115,7 @@ LAE0E:                 LDA     #$16
                        STA     $0B
                        LDA     $41
                        JMP     LBAEC
-PSEUDO:                DEC     $15
+PSEUDO:                DEC     txtoff
 LAE1E:                 JSR     SAE2A
                        JSR     S8B11
                        CPX     #$3B
@@ -5126,13 +5126,13 @@ SAE2A:                 LDA     #$00
                        STA     $76
                        JSR     S8967
                        BCS     LAE72
-LAE33:                 LDA     ($13),Y
+LAE33:                 LDA     (txtptr),Y
                        CMP     #$96
                        PHP
                        INY
                        PLP
                        BNE     LAE33
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     #$3D
                        BNE     LAE72
                        JMP     LAECC
@@ -5196,7 +5196,7 @@ LAEB5:                 JSR     S8AD6
                        PLA
                        TAX
                        LDY     #$00
-LAEBC:                 LDA     ($04),Y
+LAEBC:                 LDA     (aestkp),Y
                        ADC     $0041,Y
                        STA     ($62),Y
                        INY
@@ -5205,7 +5205,7 @@ LAEBC:                 LDA     ($04),Y
                        JSR     S9738
                        CLC
                        RTS
-LAECC:                 LDA     $15
+LAECC:                 LDA     txtoff
                        STA     $25
                        JSR     SAAB9
                        BCC     LAF15
@@ -5253,7 +5253,7 @@ LAF15:                 JSR     LB308
                        CMP     #$01
                        BEQ     LAEE5
                        LDA     $25
-                       STA     $15
+                       STA     txtoff
                        JMP     LAE72
 LAF2B:                 LDX     $40
                        DEX
@@ -5291,7 +5291,7 @@ LAF64:                 LDA     $0041,Y
                        CLC
                        RTS
 LAF6E:                 LDA     $25
-                       STA     $15
+                       STA     txtoff
                        JSR     expr1
                        JMP     LAF34
 LAF78:                 LDA     $40
@@ -5359,11 +5359,11 @@ LAFEE:                 JSR     SB317
                        JSR     SB287
                        LDX     $77
                        LDY     #$00
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $76
                        BEQ     LB00F
                        LDY     #$01
-LB000:                 LDA     ($04),Y
+LB000:                 LDA     (aestkp),Y
                        STA     $05FF,X
                        CPX     $78
                        BCS     LB025
@@ -5384,7 +5384,7 @@ LB016:                 LDA     $05FF,Y
 LB022:                 DEX
                        STX     $4F
 LB025:                 LDY     #$00
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        JMP     L9753
 SB02C:                 DEC     $63
                        LDY     #$FF
@@ -5438,10 +5438,10 @@ LB084:                 INC     $1E
                        JSR     SA4CB
                        JSR     SB23D
 LB095:                 LDY     $1F
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $21
                        DEY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $20
                        JSR     SADAC
                        BCS     LB0A7
@@ -5458,10 +5458,10 @@ LB0A7:                 JSR     SA417
                        CPX     #$2C
                        BEQ     LB084
                        LDY     #$00
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        TAY
                        LDA     $1E
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        PLA
                        STA     $40
                        INY
@@ -5469,10 +5469,10 @@ LB0A7:                 JSR     SA417
 LB0CA:                 LDY     $1F
                        INY
                        INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $22
                        INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $23
                        INY
                        STY     $1F
@@ -5512,7 +5512,7 @@ LB110:                 STA     $22
                        STA     $1C
                        BCC     LB124
                        INC     $1D
-LB124:                 LDA     $12
+LB124:                 LDA     closed
                        BEQ     LB18A
                        LDA     $1D
                        BNE     LB146
@@ -5523,9 +5523,9 @@ LB124:                 LDA     $12
                        JSR     SB13A
                        JMP     LB16F
 SB13A:                 CLC
-                       ADC     $04
+                       ADC     aestkp
                        STA     $2B
-                       LDA     $05
+                       LDA     aestkp+1
                        ADC     #$00
                        STA     $2C
                        RTS
@@ -5539,21 +5539,21 @@ LB146:                 LDA     $24
                        SBC     $1D
                        STA     $2C
                        BCC     LB1BF
-                       LDA     $08
+                       LDA     vartop
                        CMP     $2B
-                       LDA     $09
+                       LDA     vartop+1
                        SBC     $2C
                        BCS     LB1BF
                        LDY     #$00
-LB166:                 LDA     ($04),Y
+LB166:                 LDA     (aestkp),Y
                        STA     ($2B),Y
                        INY
                        CPY     $1F
                        BCC     LB166
 LB16F:                 LDA     $2B
-                       STA     $04
+                       STA     aestkp
                        LDA     $2C
-                       STA     $05
+                       STA     aestkp+1
                        JSR     SA4AC
                        LDA     $2B
                        CLC
@@ -5565,25 +5565,25 @@ LB16F:                 LDA     $2B
                        JMP     LB1B6
 LB18A:                 LDY     #$FF
 LB18C:                 INY
-                       LDA     ($04),Y
-                       STA     ($08),Y
+                       LDA     (aestkp),Y
+                       STA     (vartop),Y
                        CPY     $1F
                        BCC     LB18C
                        LDA     $24
                        JSR     S9755
                        CLC
-                       LDA     $08
+                       LDA     vartop
                        ADC     $1C
                        TAX
-                       LDA     $09
+                       LDA     vartop+1
                        ADC     $1D
                        TAY
-                       CPX     $04
-                       SBC     $05
+                       CPX     aestkp
+                       SBC     aestkp+1
                        BCS     LB1BF
                        JSR     SAD7D
-                       STX     $08
-                       STY     $09
+                       STX     vartop
+                       STY     vartop+1
                        STX     $29
                        STY     $2A
 LB1B6:                 LDA     $40
@@ -5727,7 +5727,7 @@ LB2B4:                 BEQ     LB2B9
 LB2B9:                 LDX     #$04
                        CLC
                        LDY     #$00
-LB2BE:                 LDA     ($04),Y
+LB2BE:                 LDA     (aestkp),Y
                        ADC     $0041,Y
                        STA     $0041,Y
                        INY
@@ -5760,11 +5760,11 @@ SB2FC:                 LDA     #$40
 SB2FF:                 LDA     #$00
                        JSR     SB2A3
 SB304:                 PHA
-LB305:                 INC     $15
+LB305:                 INC     txtoff
                        DFB     $24          ; BIT - skips over the PHA.
 LB308:                 PHA
-                       LDY     $15
-                       LDA     ($13),Y
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        CMP     #$20
                        BEQ     LB305
                        STA     $6A
@@ -5773,17 +5773,17 @@ LB308:                 PHA
                        CLC
                        RTS
 SB317:                 LDY     #$00
-                       LDA     $04
+                       LDA     aestkp
                        LDA     $4F
                        JSR     SA507
                        LDY     $4F
                        BEQ     LB32C
 LB324:                 LDA     $05FF,Y
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        DEY
                        BNE     LB324
 LB32C:                 LDA     $4F
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        RTS
 SB331:                 STA     $79
                        LDX     #$62
@@ -5821,14 +5821,14 @@ LB37A:                 LDA     #$FF
 LB37F:                 JSR     S8AD6
                        JSR     SB304
                        LDY     #$04
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        TAX
                        BEQ     LB3D0
                        BIT     $44
                        BPL     LB399
                        SEC
                        LDA     $41
-LB393:                 ADC     ($04),Y
+LB393:                 ADC     (aestkp),Y
                        STA     $41
                        BCC     LB393
 LB399:                 LDA     $41
@@ -5843,7 +5843,7 @@ LB3A2:                 TAX
                        BPL     LB3B5
                        SEC
                        LDA     $41
-LB3AF:                 ADC     ($04),Y
+LB3AF:                 ADC     (aestkp),Y
                        STA     $41
                        BCC     LB3AF
 LB3B5:                 LDA     $41
@@ -5875,7 +5875,7 @@ LB3E1:                 INY
                        JMP     LB8EB
 SB3F0:                 JSR     expr1
                        JMP     SB2EB
-expri:                 INC     $15
+expri:                 INC     txtoff
 expr1:                 JSR     expr2
 LB3FB:                 CPX     #$89
                        BEQ     LB405
@@ -5894,14 +5894,14 @@ LB405:                 TAY
                        PLA
                        CMP     #$89
                        BEQ     LB429
-LB419:                 LDA     ($04),Y
+LB419:                 LDA     (aestkp),Y
                        EOR     $0041,Y
                        STA     $0041,Y
                        DEY
                        BPL     LB419
 LB424:                 JSR     SB2DF
                        BNE     LB3FB
-LB429:                 LDA     ($04),Y
+LB429:                 LDA     (aestkp),Y
                        ORA     $0041,Y
                        STA     $0041,Y
                        DEY
@@ -5914,7 +5914,7 @@ LB439:                 CPX     #$85
                        JSR     expr3
                        JSR     SB2EB
                        LDY     #$03
-LB448:                 LDA     ($04),Y
+LB448:                 LDA     (aestkp),Y
                        AND     $0041,Y
                        STA     $0041,Y
                        DEY
@@ -5922,18 +5922,18 @@ LB448:                 LDA     ($04),Y
                        JSR     SB2DF
                        BCC     LB439
 LB458:                 JSR     SB317
-                       INC     $15
+                       INC     txtoff
                        JSR     SBA36
                        JSR     FFALSE
 LB463:                 LDY     #$00
                        LDA     $4F
-                       CMP     ($04),Y
+                       CMP     (aestkp),Y
                        BCC     LB481
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        BEQ     LB47D
                        STA     $51
 LB471:                 INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        CMP     $05FF,Y
                        BNE     LB48C
                        CPY     $51
@@ -5969,7 +5969,7 @@ LB4B7:                 JSR     SB304
                        CPX     #$3D
                        PHP
                        BNE     LB4C1
-                       INC     $15
+                       INC     txtoff
 LB4C1:                 JSR     SB504
                        BCS     LB4CC
 LB4C6:                 PLP
@@ -5985,18 +5985,18 @@ LB4D3:                 JSR     SB304
                        CPX     #$3D
                        PHP
                        BNE     LB4E1
-                       INC     $15
+                       INC     txtoff
 LB4E1:                 JSR     SB504
                        BCC     LB4FE
                        BNE     LB4C6
                        PLP
                        BNE     LB4C7
                        BEQ     LB4FF
-LB4ED:                 INC     $15
+LB4ED:                 INC     txtoff
                        JSR     SB504
                        BNE     LB4FF
                        BEQ     LB4C7
-LB4F6:                 INC     $15
+LB4F6:                 INC     txtoff
 LB4F8:                 JSR     SB504
                        BNE     LB4C7
                        PHP
@@ -6015,7 +6015,7 @@ LB519:                 JSR     SB317
                        JSR     SBA36
                        LDX     $4F
                        LDY     #$00
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $50
                        CMP     $4F
                        BCS     LB52C
@@ -6024,7 +6024,7 @@ LB52C:                 STX     $51
 LB52E:                 CPY     $51
                        BEQ     LB53C
                        INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        CMP     $05FF,Y
                        BNE     LB540
                        BEQ     LB52E
@@ -6055,7 +6055,7 @@ SB55D:                 PHP
                        BPL     LB574
                        BMI     LB593
 SB569:                 PHP
-                       INC     $15
+                       INC     txtoff
                        TAY
                        BEQ     LB5A7
                        BMI     LB58D
@@ -6084,7 +6084,7 @@ LB5A7:                 PLP
                        JSR     SB5D0
 LB5AB:                 LDY     #$00
                        LDX     $4F
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        PHA
                        CLC
                        ADC     $4F
@@ -6116,7 +6116,7 @@ LB5D6:                 CPX     #$86
                        RTS
 LB5E7:                 JSR     SB2F1
                        JSR     SA471
-                       INC     $15
+                       INC     txtoff
                        JSR     expr6
                        JSR     SB2F1
                        JSR     SA49D
@@ -6144,7 +6144,7 @@ LB623:                 JSR     SB2F1
                        JSR     S9F29
                        JMP     LB5FB
 SB635:                 JSR     SB2A3
-                       INC     $15
+                       INC     txtoff
 expr6:                 JSR     expr7
 LB63D:                 CPX     #$5E
                        BEQ     LB64C
@@ -6155,7 +6155,7 @@ LB646:                 JSR     SB349
                        JMP     LB63D
 LB64C:                 JSR     SB2F1
                        JSR     SA471
-                       INC     $15
+                       INC     txtoff
                        JSR     expr7
                        JSR     SB2F1
                        LDA     $47
@@ -6239,7 +6239,7 @@ SB703:                 PHA
 LB706:                 RTS
 SB707:                 JSR     SB70D
                        JMP     SB2EB
-SB70D:                 INC     $15
+SB70D:                 INC     txtoff
 expr8:                 TSX
                        CPX     #$20
                        BCS     LB716
@@ -6259,7 +6259,7 @@ LB725:                 CPX     #$28
                        JMP     SB304
 LB72F:                 CPX     #$2B
                        BNE     LB737
-                       INC     $15
+                       INC     txtoff
                        BNE     expr8
 LB737:                 CPX     #$2D
                        BNE     LB74C
@@ -6287,11 +6287,11 @@ LB762:                 JSR     SB274
                        JMP     LB308
 LB768:                 CPX     #$26
                        BNE     LB79C
-                       INC     $15
+                       INC     txtoff
                        JSR     FFALSE
-                       LDY     $15
+                       LDY     txtoff
                        LDX     #$00
-LB775:                 LDA     ($13),Y
+LB775:                 LDA     (txtptr),Y
                        JSR     isxdig
                        BCS     LB797
                        CMP     #$3A
@@ -6311,27 +6311,27 @@ LB788:                 ASL
                        BPL     LB788
                        INY
                        BNE     LB775
-LB797:                 STY     $15
+LB797:                 STY     txtoff
                        JMP     LB932
 LB79C:                 CPX     #$22
                        BCC     LB7C8
                        BNE     LB7D5
-SB7A2:                 INC     $15
-                       LDY     $15
+SB7A2:                 INC     txtoff
+                       LDY     txtoff
                        LDX     #$00
-LB7A8:                 LDA     ($13),Y
+LB7A8:                 LDA     (txtptr),Y
                        CMP     #$22
                        BEQ     LB7BB
                        CMP     #$0D
                        BEQ     LB822
 LB7B2:                 STA     $0600,X
-                       INC     $15
+                       INC     txtoff
                        INX
                        INY
                        BNE     LB7A8
-LB7BB:                 INC     $15
-                       LDY     $15
-                       LDA     ($13),Y
+LB7BB:                 INC     txtoff
+                       LDY     txtoff
+                       LDA     (txtptr),Y
                        CMP     #$22
                        BEQ     LB7B2
                        JMP     LB8EB
@@ -6453,20 +6453,20 @@ FINKEYS:               JSR     SB937
 LB8AC:                 LDX     #$00
                        BEQ     LB8EB
 FSIZE:                 SEC
-                       LDA     $0D
-                       SBC     $07
+                       LDA     prgtop+1
+                       SBC     page+1
                        TAX
-                       LDA     $0C
+                       LDA     prgtop
                        BCS     SB874
-FPAGE:                 LDX     $07
+FPAGE:                 LDX     page+1
                        LDA     #$00
                        BEQ     SB874
 FFREE:                 SEC
-                       LDA     $04
-                       SBC     $08
+                       LDA     aestkp
+                       SBC     vartop
                        STA     $41
-                       LDA     $05
-                       SBC     $09
+                       LDA     aestkp+1
+                       SBC     vartop+1
                        TAX
                        JMP     LB876
 FGET:                  JSR     S83FF
@@ -6534,20 +6534,20 @@ FVAL:                  JSR     S86F5
                        PHA
                        BNE     LB966
                        STX     $2D
-LB966:                 LDA     $04
-                       STA     $13
-                       LDA     $05
-                       STA     $14
-                       INC     $13
+LB966:                 LDA     aestkp
+                       STA     txtptr
+                       LDA     aestkp+1
+                       STA     txtptr+1
+                       INC     txtptr
                        BNE     LB974
-                       INC     $14
+                       INC     txtptr+1
 LB974:                 JSR     S8B17
                        JSR     S8B86
                        LDY     #$5C
                        JSR     S93D3
                        BCS     LB998
                        LDA     #$00
-                       STA     $15
+                       STA     txtoff
                        JSR     expr1
                        STA     $7D
                        JSR     LB025
@@ -6556,7 +6556,7 @@ LB974:                 JSR     S8B17
                        JSR     S8AF6
                        LDA     $7D
                        JMP     LB308
-LB998:                 LDA     $3F
+LB998:                 LDA     erflag
                        BRK
 LB99B:                 BRK
                        DFB     $21
@@ -6634,15 +6634,15 @@ LBA74:                 PLP
                        JSR     PROC
                        CPX     #$EC
                        BNE     LBAE0
-                       INC     $15
+                       INC     txtoff
 IF:                    JSR     SBA51
                        PHP
                        JSR     S89AF
                        BEQ     LBA74
                        PLP
                        BEQ     LBAE0
-                       LDA     ($13),Y
-                       INC     $15
+                       LDA     (txtptr),Y
+                       INC     txtoff
                        JMP     S852B
 CASE:                  JSR     expr1
                        PHA
@@ -6706,7 +6706,7 @@ LBB0A:                 JSR     S89B1
 LBB14:                 CLC
                        RTS
 PLOT:                  JSR     SB3F0
-                       INC     $15
+                       INC     txtoff
                        LDX     $41
                        BIT     $05A2
                        BIT     $04A2
@@ -6723,7 +6723,7 @@ ENVELP:                LDA     #$08
                        BIT     $07A9
                        PHA
                        ROR     $84
-                       DEC     $15
+                       DEC     txtoff
                        LDX     #$00
 LBB45:                 TXA
                        PHA
@@ -6746,20 +6746,20 @@ LBB5C:                 JSR     S89B4
                        JSR     osword
                        CLC
                        RTS
-LBB6B:                 LDY     $6F
+LBB6B:                 LDY     lstkp
                        LDA     $0500,Y
-                       STA     $13
+                       STA     txtptr
                        DEY
                        LDA     $0500,Y
-                       STA     $14
+                       STA     txtptr+1
                        DEY
                        SEC
-                       STY     $6F
+                       STY     lstkp
                        RTS
 UNTIL:                 JSR     SBA51
                        BEQ     LBB6B
-                       DEC     $6F
-                       DEC     $6F
+                       DEC     lstkp
+                       DEC     lstkp
                        CLC
                        RTS
 SBB88:                 BMI     LBB93
@@ -6771,20 +6771,20 @@ LBB93:                 LDA     $7D
                        JSR     SB2F1
                        STA     $7E
                        JSR     S8AC0
-                       INC     $6F
-                       LDY     $6F
+                       INC     lstkp
+                       LDY     lstkp
                        STY     $62
                        LDA     #$05
                        STA     $63
                        JSR     S9C70
-                       LDA     $6F
+                       LDA     lstkp
                        CLC
                        ADC     #$04
-                       STA     $6F
+                       STA     lstkp
                        JSR     S8AD6
                        RTS
 LBBB5:                 LDX     #$00
-                       LDY     $6F
+                       LDY     lstkp
                        INY
 LBBBA:                 LDA     $41,X
                        STA     $0500,Y
@@ -6792,7 +6792,7 @@ LBBBA:                 LDA     $41,X
                        INY
                        CPX     #$04
                        BNE     LBBBA
-                       STY     $6F
+                       STY     lstkp
                        RTS
 SBBC8:                 TAY
                        LDA     $0500,Y
@@ -6810,7 +6810,7 @@ LBBD8:                 LDA     $0500,Y
                        CPX     #$04
                        BNE     LBBD8
                        RTS
-SBBE4:                 LDY     $6F
+SBBE4:                 LDY     lstkp
                        LDA     $0500,Y
                        PHP
                        TYA
@@ -6837,19 +6837,19 @@ SBBF0:                 JSR     SBBE4
                        EOR     #$80
                        STA     $44
                        SEC
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        SBC     $41
                        STA     $41
                        INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        SBC     $42
                        STA     $42
                        INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        SBC     $43
                        STA     $43
                        INY
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        LDY     #$00
                        EOR     #$80
                        SBC     $44
@@ -6873,23 +6873,23 @@ LBC55:                 BEQ     LBC65
                        BPL     LBC65
                        SEC
                        RTS
-LBC5E:                 LDA     $6F
+LBC5E:                 LDA     lstkp
                        SEC
                        SBC     #$0D
-                       STA     $6F
+                       STA     lstkp
 LBC65:                 CLC
                        RTS
 FOR:                   JSR     LAECC
                        LDA     $7E
                        PHA
-                       LDY     $6F
+                       LDY     lstkp
                        INY
                        LDA     $63
                        STA     $0500,Y
                        INY
                        LDA     $62
                        STA     $0500,Y
-                       STY     $6F
+                       STY     lstkp
                        JSR     expri
                        STA     $7D
                        PLA
@@ -6907,24 +6907,24 @@ LBC95:                 STA     $7D
                        PHA
                        JSR     SBB88
                        PLA
-                       INC     $6F
-                       LDY     $6F
+                       INC     lstkp
+                       LDY     lstkp
                        STA     $0500,Y
                        JSR     S89B1
                        BEQ     LBCCF
 LBCAC:                 JSR     SBBF0
                        BCS     LBC5E
-SBCB1:                 LDA     $15
+SBCB1:                 LDA     txtoff
                        PHA
                        TAY
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        STY     $82
-                       INC     $15
+                       INC     txtoff
                        JSR     S852B
                        JSR     SBD26
                        JSR     chkesc
                        PLA
-                       STA     $15
+                       STA     txtoff
                        BNE     LBCAC
 NEXT:                  JSR     LBB6B
                        JSR     SBD26
@@ -6932,36 +6932,36 @@ LBCCF:                 JSR     SBBF0
                        BCC     REPEAT
                        JSR     LBC5E
 PROC:                  LDY     #$04
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        STA     $50
 LBCDD:                 JSR     S8A01
                        BMI     LBD1C
                        LDY     #$04
-                       LDA     ($13),Y
+                       LDA     (txtptr),Y
                        CMP     $50
                        BNE     LBCDD
 SBCEA:                 LDY     #$05
-                       STY     $15
+                       STY     txtoff
                        JMP     LB308
 WHILE:                 JSR     SBA51
                        BEQ     LBD1E
                        JSR     S89AF
                        BEQ     REPEAT
                        LDA     $6A
-                       INC     $15
+                       INC     txtoff
                        JSR     chkesc
                        JSR     S852B
                        JSR     SBCEA
-                       INC     $15
+                       INC     txtoff
                        BNE     WHILE
-REPEAT:                LDY     $6F
+REPEAT:                LDY     lstkp
                        INY
-                       LDA     $14
+                       LDA     txtptr+1
                        STA     $0500,Y
-                       LDA     $13
+                       LDA     txtptr
                        INY
                        STA     $0500,Y
-                       STY     $6F
+                       STY     lstkp
 LBD1C:                 CLC
                        RTS
 LBD1E:                 JSR     S89AF
@@ -7014,7 +7014,7 @@ TOK_FE:                JSR     SAD14
                        LDA     #$EE
                        JSR     LAC94
                        BCS     LBD85
-SBD7F:                 LDA     $68
+SBD7F:                 LDA     pdbugd
                        BNE     LBD87
                        BRK
 LBD84:                 DFB     $20                                    ;  
@@ -7023,41 +7023,41 @@ LBD85:                 BRK
 LBD87:                 TSX
                        TXA
                        CLC
-                       ADC     $04
+                       ADC     aestkp
                        JSR     SA50E
                        LDY     #$00
                        TXA
-                       STA     ($04),Y
+                       STA     (aestkp),Y
 LBD94:                 INX
                        INY
                        LDA     $0100,X
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        CPX     #$FF
                        BNE     LBD94
                        LDX     #$FD
                        TXS
-                       LDA     $6F
+                       LDA     lstkp
                        JSR     SA507
-                       LDY     $6F
+                       LDY     lstkp
                        BEQ     LBDB3
 LBDAB:                 LDA     $0500,Y
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        DEY
                        BNE     LBDAB
-LBDB3:                 LDA     $6F
-                       STA     ($04),Y
-                       STY     $6F
+LBDB3:                 LDA     lstkp
+                       STA     (aestkp),Y
+                       STY     lstkp
                        LDA     #$19
                        JSR     SA505
                        LDY     #$17
 LBDC0:                 LDA     locall,Y
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        DEY
                        BPL     LBDC0
-                       LDA     $04
-                       STA     $0E
-                       LDA     $05
-                       STA     $0F
+                       LDA     aestkp
+                       STA     locall
+                       LDA     aestkp+1
+                       STA     locall+1
                        LDA     $62
                        SEC
                        SBC     #$07
@@ -7071,7 +7071,7 @@ LBDC0:                 LDA     locall,Y
                        JSR     LB308
                        TXA
                        LDY     #$18
-                       STA     ($04),Y
+                       STA     (aestkp),Y
                        CMP     #$28
                        BEQ     LBDF3
                        JMP     LBE63
@@ -7088,10 +7088,10 @@ LBE02:                 JSR     SBEF7
                        CPX     #$90
                        BNE     LBE12
                        JMP     LBE8D
-LBE12:                 LDA     $12
+LBE12:                 LDA     closed
                        PHA
                        LDA     #$FF
-                       STA     $12
+                       STA     closed
                        JSR     SAD14
                        LDA     $40
                        BNE     LBE25
@@ -7099,13 +7099,13 @@ LBE12:                 LDA     $12
                        BCC     LBE28
 LBE25:                 JSR     SAC1D
 LBE28:                 PLA
-                       STA     $12
+                       STA     closed
                        LDA     $40
                        PHA
                        JSR     S8AC0
                        JSR     LB308
                        JSR     SBEEE
-                       INC     $15
+                       INC     txtoff
                        JSR     expr1
                        JSR     LB308
                        STA     $40
@@ -7120,17 +7120,17 @@ LBE4C:                 BRK
 LBE4E:                 JSR     SB02C
                        PLA
                        JSR     SAF0F
-LBE55:                 LDY     $15
-                       LDA     ($13),Y
+LBE55:                 LDY     txtoff
+                       LDA     (txtptr),Y
                        LDY     $18
                        CMP     ($16),Y
                        BNE     LBE4C
                        CMP     #$2C
                        BEQ     LBDFF
-LBE63:                 INC     $15
-                       LDA     $15
+LBE63:                 INC     txtoff
+                       LDA     txtoff
                        LDY     #$07
-                       STA     ($0E),Y
+                       STA     (locall),Y
                        JSR     SBEF7
                        JSR     S8AA9
                        JSR     S8EA7
@@ -7138,16 +7138,16 @@ LBE63:                 INC     $15
                        CMP     #$FD
                        BNE     LBE7B
                        DEX
-LBE7B:                 STX     $12
+LBE7B:                 STX     closed
                        LDX     #$01
-LBE7F:                 LDA     $0E,X
-                       STA     $10,X
+LBE7F:                 LDA     locall,X
+                       STA     localh,X
                        LDA     $04,X
-                       STA     $0E,X
+                       STA     locall,X
                        DEX
                        BPL     LBE7F
                        JMP     L8777
-LBE8D:                 INC     $15
+LBE8D:                 INC     txtoff
                        JSR     SBEEE
                        JSR     SB304
                        JSR     SAAB9
@@ -7162,14 +7162,14 @@ LBE9E:                 JSR     LB308
                        JSR     S8AC0
                        LDA     $40
                        PHA
-                       LDA     $12
+                       LDA     closed
                        PHA
                        LDA     #$FF
-                       STA     $12
+                       STA     closed
                        JSR     SAD14
                        JSR     SAC2D
                        PLA
-                       STA     $12
+                       STA     closed
                        JSR     LB308
                        JSR     SBEEE
                        PLA
@@ -7177,12 +7177,12 @@ LBE9E:                 JSR     LB308
                        BNE     LBE9C
                        JSR     S8B08
                        BNE     LBEE2
-LBECD:                 LDY     $15
-                       LDA     ($13),Y
+LBECD:                 LDY     txtoff
+                       LDA     (txtptr),Y
                        LDY     $18
                        CMP     ($16),Y
                        BNE     LBE9C
-                       INC     $15
+                       INC     txtoff
                        INC     $18
                        CMP     #$29
                        BNE     LBECD
@@ -7224,7 +7224,7 @@ END:                   CPX     #$EE
 LBF1D:                 LDA     #$00
                        STA     $82
 LBF21:                 RTS
-LBF22:                 INC     $15
+LBF22:                 INC     txtoff
                        JMP     LBB6B
 LBF27:                 BRK
 LBF28:                 DFB     $28                                    ; (
@@ -7238,10 +7238,10 @@ RETURN:                JSR     expr1
                        PLA
                        STA     $40
 LBF38:                 LDY     #$18
-                       LDA     ($10),Y
+                       LDA     (localh),Y
                        CMP     #$28
                        BEQ     LBF44
-                       LDA     $12
+                       LDA     closed
                        BEQ     LBF5F
 LBF44:                 LDX     #$B4
 LBF46:                 STX     $36
@@ -7258,34 +7258,34 @@ LBF57:                 LDA     $63
                        DEX
                        DEX
                        BMI     LBF46
-LBF5F:                 LDA     $10
-                       STA     $04
-                       LDA     $11
-                       STA     $05
+LBF5F:                 LDA     localh
+                       STA     aestkp
+                       LDA     localh+1
+                       STA     aestkp+1
                        LDY     #$17
-LBF69:                 LDA     ($04),Y
+LBF69:                 LDA     (aestkp),Y
                        STA     locall,Y
                        DEY
                        BPL     LBF69
                        LDA     #$18
                        JSR     L9753
                        LDY     #$00
-                       LDA     ($04),Y
-                       STA     $6F
+                       LDA     (aestkp),Y
+                       STA     lstkp
                        TAY
                        BEQ     LBF89
-LBF7F:                 LDA     ($04),Y
+LBF7F:                 LDA     (aestkp),Y
                        STA     $0500,Y
                        DEY
                        BNE     LBF7F
-                       LDA     $6F
+                       LDA     lstkp
 LBF89:                 JSR     L9753
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        TAX
                        TXS
 LBF90:                 INY
                        INX
-                       LDA     ($04),Y
+                       LDA     (aestkp),Y
                        STA     $0100,X
                        CPX     #$FF
                        BNE     LBF90
@@ -7307,22 +7307,22 @@ LBFAE:                 JSR     SAD86
                        BCS     LBF57
 IMPORT:                JSR     SAAB6
                        BCC     LBFD4
-                       LDA     $15
+                       LDA     txtoff
                        PHA
-                       LDA     $12
+                       LDA     closed
                        PHA
                        LDA     #$00
-                       STA     $12
+                       STA     closed
                        JSR     SAAB6
                        PLA
-                       STA     $12
+                       STA     closed
                        BCC     LBFD6
                        BRK
 LBFD3:                 DFB     $20                                    ;  
 LBFD4:                 BRK
                        DFB     $26
 LBFD6:                 PLA
-                       STA     $15
+                       STA     txtoff
                        JSR     S8AC0
                        JSR     SAC2D
                        JSR     S8B08
