@@ -1,0 +1,221 @@
+0x0000  data    himem
+0x0002  data    lomem
+0x0004  data    aestkp
+0x0006  data    page
+0x0008  data    vartop
+0x000c  data    prgtop
+0x000e  data    locall
+0x0010  data    localh
+0x0012  data    closed
+0x0013  data    txtptr
+0x0015  data    txtoff
+0x003f  data    erflag
+0x0068  data    pdbugd
+0x006f  data    lstkp
+0x8231	string
+0x84d7  data
+0x857f  data
+0x9685  data
+0x9d36  data
+0x9f50  data
+0x9f87  data
+0xa051  data
+0xa326  data
+0x8581  data
+0xa6f9  data
+0xa76e  data
+0xa792  data
+0xa7eb  data
+0xa817  data
+0xa90f  data
+0xa949  data
+0xa97e  data
+0xaa13  data
+0xaa39  data
+0xabb8  data
+0xAC1A  data
+0xADF3  data
+0xAEE4  data
+0xAEE8  data
+0xB04B  data
+0xB0A6  data
+0xB104  data
+0xB1C0  data
+0xB5BD  data
+0xB715  data
+0xB757  data
+0xBA4B  data
+0xBD84  data
+0xBF28  data
+0xBF2A  data
+0xBFD3  data
+0xa113	data
+0xa1f5	data
+0xa2d1	data
+0xa2ec	data
+0xa34a	data
+0xa521	data
+0xA669	data
+0xA6FB	data
+0xA76F	data
+0xA8AD	data
+0xAC1C	data
+0xAEE6	data
+0x85aa	data
+
+0x8000  mcode
+0x8006  data
+0x8364  mcode   lang
+0x8018  mcode   serv
+0x8049  mcode   notcmd
+0x803C  mcode   svdone
+0x83f8  mcode   escape
+0x83fe  string
+0x8402  mcode   chkesc
+0x8407  mcode   toklin
+0x877c  string
+0x8a71  string
+0x8bf7  mcode   tknfnd
+0x8986  mcode   isdig
+0x896B  mcode   islc
+0x89a5  mcode   isxuc
+0x8994  mcode   isxdig
+0x832d  mcode   outchr
+0x80be  mcode   brkhnd
+0x83c6  mcode   rdline
+0x8523  mcode   execim
+
+0x8c9a  word    dispat
+0x9038  data    toknos
+0x90e9  data    tkadlo
+0x9146  data    tkadhi
+
+# Commands.
+
+0xae1c  mcode   PSEUDO
+0xaa3a  mcode   CLEAR
+0x8521  mcode   NULL
+0xbaea  mcode   CLG
+0x8353  mcode   CLS
+0xaa4a  mcode   NEW
+0x8580  mcode   STOP
+0xa738  mcode   RESTOR
+0xbd75  mcode   EXEC
+0x901b  mcode   GOTO
+0x863a  mcode   DEL
+0x8521  mcode   DATA
+0x873b  mcode   RUN
+0x86a2  mcode   SAVE
+0x868d  mcode   LOAD
+0x86c6  mcode   DELETE
+0xa9d7  mcode   SELECT
+0xbaf9  mcode   VDU
+0xb037  mcode   DIM
+0x8548  mcode   COSCLI
+0xa811  mcode   OPEN
+0xa6a7  mcode   INPUT
+0xa8dd  mcode   WRITE
+0xa6fc  mcode   READ
+0xa8ae  mcode   CLOSE
+0xbb1e  mcode   DRAW
+0xbaf1  mcode   GCOL
+0xbb21  mcode   MOVE
+0xbb16  mcode   PLOT
+0xbb3c  mcode   SOUND
+0xbb38  mcode   ENVELP
+0xbaf4  mcode   COLOUR
+0xbb7d  mcode   UNTIL
+0xbf0c  mcode   END
+0xbcc9  mcode   NEXT
+0xbf2b  mcode   RETURN
+0xbfbb  mcode   IMPORT
+0xbad9  mcode   OTHER
+0xbad9  mcode   ELSE
+0xbad9  mcode   WHEN
+0xbad9  mcode   ELIF
+0xbcd7  mcode   PROC
+0xba93  mcode   CASE
+0xbd0c  mcode   REPEAT
+0xba80  mcode   IF
+0xbcf1  mcode   WHILE
+0xbc67  mcode   FOR
+0xA533  mcode   PRINT
+0x8703  mcode   AUTO
+0x8601  mcode   RENUM
+0x85c5  mcode   EDIT
+0x85c7  mcode   LIST
+0x8561  mcode   CONT
+0x8d4c  mcode   DEBUG
+0x85b9  mcode   OLD
+0x8521  mcode   READON
+0x8521  mcode   CLOSED
+0xbd75  mcode   TOK_FE
+0x8521  mcode   TOK_FF
+0xB9DC  word
+
+# Functions
+
+0xb870  mcode   FFALSE
+0xa39b  mcode   FPI
+0xa3d3  mcode   FTRUE
+0xb867  mcode   FCOUNT
+0xb85f  mcode   FEOD
+0xb8cf  mcode   FGET
+0xb8da  mcode   FPOS
+0xb8b0  mcode   FSIZE
+0xb8c0  mcode   FFREE
+0xb8d5  mcode   FVPOS
+0xb8e3  mcode   FGETS
+0xb86d  mcode   FLEN
+0xb88d  mcode   FORD
+0xb955  mcode   FVAL
+0xa17e  mcode   FACS
+0xa184  mcode   FASN
+0xa1a8  mcode   FATN
+0xa228  mcode   FCOS
+0x9f18  mcode   FDEG
+0xa310  mcode   FEXP
+0xa0ba  mcode   FLN
+0x9f1e  mcode   FLOG
+0x9f88  mcode   FRAD
+0xa230  mcode   FSIN
+0xa075  mcode   FSQR
+0xa052  mcode   FTAN
+0x9ba1  mcode   FINT
+0xb84f  mcode   FSGN
+0xb900  mcode   FABS
+0xb905  mcode   FADVAL
+0xaa22  mcode   FEOF
+0xaa14  mcode   FEXT
+0xb896  mcode   FINKEY
+0xb9a0  mcode   FNOT
+0xb918  mcode   FUSR
+0xb8f2  mcode   FCHRS
+0xb8a0  mcode   FINKEYS
+0xb8fa  mcode   FSTRS
+0xb9a6  mcode   FRND
+0xb829  mcode   FPOINT
+0xb94c  mcode   FMODE
+0xb8ba  mcode   FPAGE
+0xb940  mcode   FTIME
+0xb864  mcode   FWIDTH
+0xb881  mcode   FZONE
+
+# Expression evaluation
+
+0xb3f6	mcode	expri
+0xb3f8	mcode	expr1
+0xb436	mcode	expr2
+0xb49b	mcode	expr3
+0xb548	mcode	expr4
+0xb5d3	mcode	expr5
+0xb63a	mcode	expr6
+0xb6a5	mcode	expr7
+0xb70f	mcode	expr8
+
+# OS Routines.
+
+0xffe7  mcode   osnewl
+0xffee  mcode   oswrch
+0xfff1  mcode   osword
+0xfff4  mcode   osbyte

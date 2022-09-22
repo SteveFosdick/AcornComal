@@ -1,0 +1,88 @@
+8c9A - dispatch table.
+    3:853B: B9 1D 8C    LDA 8C1D,Y  ; dispatching a command, token X2 in Y.
+    3:853E: 48          PHA
+    3:853F: B9 1C 8C    LDA 8C1C,Y
+    3:8542: 48          PHA
+    3:8543: A5 69       LDA 69
+    3:8545: 4C 08 B3    JMP B308
+
+
+                                              MODE   PAGE   TIME   WIDTH  ZONE   CLEAR  NULL   CLG
+8C9A:          dispat:                .word   $ae1b, $ae1b, $ae1b, $ae1b, $ae1b, $aa39, $8520, $bae9
+                                              CLS    NEW    STOP   RESTOR EXEC   GOTO   DEL    REM
+8CAA:                                 .word   L8352, $aa49, $857f, $a737, $bd74, $901a, $8639, $8520
+                                              DATA   RUN    SAVE   LOAD   DELET  SELECT VDU    DIM
+8CBA:                                 .word   $8520, $873a, $86a1, $868c, $86c5, $a9d6, $baf8, $b036
+                                              OSCLI  OPEN   INPUT  WRITE  READ   CLOSE  DRAW   GCOL
+8CCA:                                 .word   $8547, $a810, $a6a6, $a8dc, $a6fb, $a8ad, $bb1d, $baf0
+                                              MOVE   PLOT   SOUND  ENVEL  COLOR  UNTIL  END    NEXT
+8CDA:                                 .word   $bb20, $bb15, $bb3b, $bb37, $baf3, $bb7c, $bf0b, $bcc8
+                                              RETURN IMPORT OTHER  ELSE   WHEN   ELIF   FUNC   PROC
+8CEA:                                 .word   $bf2a, $bfba, $bad8, $bad8, $bad8, $bad8, $bcd6, $bcd6
+                                              CASE   REPEAT IF     WHILE  FOR    PRINT  AUTO   RENUMBER
+8CFA:                                 .word   $ba92, $bd0b, $ba7f, $bcf0, $bc66, LA532, $8702, $8600
+                                              EDIT   LIST   CONT   DEBUG  OLD    R/O    CLOSED  FE
+8D0A:                                 .word   $85c4, $85c6, $8560, $8d4b, $85b8, $8520, $8520, $bd74
+                                               FF
+8D1A:                                 .word   $8520
+
+, $6985, $e938, $a8e7, $5db9, $208f, $8ebd, $0bd0
+8D2A:                                 .word   $f088, $a9f5, $201b, $8068, $d44c, $a98d, $c5e8, $b069
+8D3A:                                 .word   $e405, $d06f, $18ee, $6ba5, $00e9, $d64c, $a68d, $f068
+8D4A:                                 .word   $6003, $ffa9, $2885, $8220, $2085, S8F43, $6f86, $008e
+8D5A:                                 .word   $8605, $8620, $ca6b, $6886, $e4a9, $3885, $04a9, $3985
+8D6A:                                 .word   $01a0, $26b1, $0610, $ce20, $4c8e, $8f6a, $e7a2, $8820
+8D7A:                                 .word   $b08a, $a09f, LB105, $8526, $c969, $90e4, $c94d, $90e7
+8D8A:                                 .word   $c959, $90ed, $c98d, $b0f4, $c941, $90f1, $200b, S8EA7
+8D9A:                                 .word   $8cc9, $04f0, $93c9, $32d0, $b220, $d08a, $2003, $8ece
+8DAA:                                 .word   $6fa5, $6918, $b003, $852e, $a66f, $bd69, $8e76, $2065
+8DBA:                                 .word   $2085, $21b0, $6fa6, $27a5, $ff9d, $a504, $9d26, $04fe
+8DCA:                                 .word   $69a5, $009d, SA505, $e66b, $2c6b, $6ba5, $04a0, $2691
+8DDA:                                 .word   $1420, $908a, $a98b, $4c1c, $8068, $e5c9, $1df0, $e6c9
+8DEA:                                 .word   $2ef0, $f0a9, $f620, $b08d, $4ce1, $8e97, $6985, $bd20
+8DFA:                                 .word   $f08e, $4c03, $8ed0, $1da9, $684c, $c880, $26b1, $b620
+8E0A:                                 .word   $d089, $2005, $8ece, $c290, $b220, $d08a, $c8d7, $2cc8
+8E1A:                                 .word   $f3a9, $7884, $f620, $b08d, $a4b1, $2078, $8f30, $2620
+8E2A:                                 .word   $a690, $bd6f, $04fe, $2685, $ffbd, $8504, $a027, SA505
+8E3A:                                 .word   $2069, S8AB2, $10d0, $26a5, $91c8, $a538, $c827, $3891
+8E4A:                                 .word   $3985, $26a5, $3885, $1a20, $d08f, $2005, $8f09, $37b0
+8E5A:                                 .word   $00a0, $34b1, $b620, $d089, $8829, $0820, $908f, L98FB
+8E6A:                                 .word   $2048, $902f, $03a0, $7118, $9126, $a526, $8534, $a526
+8E7A:                                 .word   $8535, $6827, $a720, $a084, $20ff, $8f08, $09b0, $2691
+8E8A:                                 .word   $f790, $19a9, $6520, $2080, S8582, $2f20, $c690, $c66f
+8E9A:                                 .word   $c66f, $c66f, $a66b, $2069, $8eb4, $d44c, $a28d, $20ce
+8EAA:                                 .word   S8A88
+
+LIST=EDIT
+
+Recursive descent expression evaluation? B708?
+3:A5F3: 20 F8 B3    JSR B3F8    >s
+3:B3F8: 20 36 B4    JSR B436    >s
+3:B436: 20 9B B4    JSR B49B    >s
+3:B49B: 20 48 B5    JSR B548    >s
+3:B548: 20 D3 B5    JSR B5D3    >s
+3:B5D3: 20 3A B6    JSR B63A    >s
+3:B63A: 20 A5 B6    JSR B6A5    >s
+3:B6A5: 20 0F B7    JSR B70F    >s
+
+Function table?
+3:B71A: 38          SEC         >s
+3:B71B: E9 97       SBC #97     >s
+3:B71D: 90 06       BCC B725    >s
+3:B71F: 20 CB B6    JSR B6CB    >
+
+B9DD - function table.
+
+                                              FALSE  PI     TRUE   COUNT  EOD    GET    POS    SIZE
+B9DC:          LB9DC:                 .word   $b86f, $a39a, $a3d2, $b866, $b85e, $b8ce, $b8d9, $b8af
+                                              FREE   VPOS   GET$   LEN    ORD    VAL    ACS     ASN
+B9EC:                                 .word   $b8bf, $b8d4, $b8e2, $b86c, $b88c, $b954, $a17d, $a183
+                                              ATN    COS    DEG    EXP    LN     LOG    RAD    SIN
+B9FC:                                 .word   $a1a7, $a227, $9f17, $a30f, $a0b9, $9f1d, L9F87, $a22f
+                                              SQR    TAN    INT    SGN    ABS    ADVAL  EOF    EXT
+BA0C:                                 .word   $a074, LA051, L9BA0, $b84e, $b8ff, $b904, $aa21, LAA13
+                                              INKEY  NOT    USR    CHR$   INKEY$ STR$   RND    POINT(
+BA1C:                                 .word   $b895, $b99f, $b917, $b8f1, $b89f, $b8f9, $b9a5, $b828
+                                              MODE   PAGE   TIME   WIDTH  ZONE
+BA2C:                                 .word   $b94b, $b8b9, $b93f, $b863, $b880
+
