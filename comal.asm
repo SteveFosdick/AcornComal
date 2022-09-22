@@ -537,7 +537,7 @@ L850F:                 JSR     SB304
                        JSR     LA52A
 L851C:                 LDX     #$3A
                        JSR     SA43A
-TOK_FF:                CLC
+NULL:                  CLC
 L8522:                 RTS
 execim:                LDA     $6C
                        BEQ     L8522
@@ -625,7 +625,8 @@ OLD:                   JSR     NEW
                        STA     (page),Y
                        JMP     L8681
 EDIT:                  SEC
-                       BIT     $18
+                       DFB     $24          ; BIT - skip the next instruction
+LIST:                  CLC
                        ROR     $76
                        JSR     S84E6
                        BIT     $1D
@@ -1270,15 +1271,23 @@ S8C8E:                 LDA     ($2B),Y
                        ORA     #$20
                        STA     ($2B),Y
 L8C99:                 RTS
-cmdtab:                DFW     $AE1B, $AE1B, $AE1B, $AE1B, $AE1B, LAA39, $8520, $BAE9
-                       DFW     L8352, $AA49, L857F, $A737, $BD74, $901A, L8639, $8520
-                       DFW     $8520, $873A, $86A1, $868C, $86C5, $A9D6, $BAF8, $B036
-                       DFW     $8547, $A810, $A6A6, $A8DC, LA6FB, LA8AD, $BB1D, $BAF0
-                       DFW     $BB20, $BB15, $BB3B, $BB37, $BAF3, $BB7C, $BF0B, $BCC8
-                       DFW     LBF2A, $BFBA, $BAD8, $BAD8, $BAD8, $BAD8, $BCD6, $BCD6
-                       DFW     $BA92, $BD0B, $BA7F, $BCF0, $BC66, LA532, L8702, L8600
-                       DFW     $85C4, $85C6, $8560, $8D4B, $85B8, $8520, $8520, $BD74
-                       DFW     $8520
+cmdtab:                DFW     PSEUDO-1, PSEUDO-1, PSEUDO-1, PSEUDO-1
+                       DFW     PSEUDO-1, CLEAR-1,  NULL-1,   CLG-1
+                       DFW     CLS-1,    NEW-1,    STOP-1,   RESTOR-1
+                       DFW     EXEC-1,   GOTO-1,   DEL-1,    NULL-1
+                       DFW     NULL-1,   RUN-1,    SAVE-1,   LOAD-1
+                       DFW     DELETE-1, SELECT-1, VDU-1,    DIM-1
+                       DFW     COSCLI-1, OPEN-1,   INPUT-1,  WRITE-1
+                       DFW     READ-1,   CLOSE-1,  DRAW-1,   GCOL-1
+                       DFW     MOVE-1,   PLOT-1,   SOUND-1,  ENVELP-1
+                       DFW     COLOUR-1, UNTIL-1,  END-1,    NEXT-1
+                       DFW     RETURN-1, IMPORT-1, ELSE-1,   ELSE-1
+                       DFW     ELSE-1,   ELSE-1,   FNPROC-1, FNPROC-1
+                       DFW     CASE-1,   REPEAT-1, IF-1,     WHILE-1
+                       DFW     FOR-1,    PRINT-1,  AUTO-1,   RENUM-1
+                       DFW     EDIT-1,   LIST-1,   CONT-1,   DEBUG-1
+                       DFW     OLD-1,    NULL-1,   NULL-1,   EXEC-1
+                       DFW     NULL-1
 L8D1C:                 STA     $69
                        SEC
                        SBC     #$E7
@@ -6631,7 +6640,7 @@ LBA6F:                 JSR     S9740
                        RTS
 LBA74:                 PLP
                        BNE     LBAE0
-                       JSR     PROC
+                       JSR     FNPROC
                        CPX     #$EC
                        BNE     LBAE0
                        INC     txtoff
@@ -6647,7 +6656,7 @@ IF:                    JSR     SBA51
 CASE:                  JSR     expr1
                        PHA
                        JSR     SB2A3
-                       JSR     PROC
+                       JSR     FNPROC
                        BCC     LBAA7
 LBA9F:                 PLA
                        PHA
@@ -6666,7 +6675,7 @@ LBAB9:                 JSR     SBA54
                        BNE     LBACD
                        CPX     #$2C
                        BEQ     LBA9F
-                       JSR     PROC
+                       JSR     FNPROC
                        CPX     #$E9
                        BEQ     LBACD
                        CPX     #$EB
@@ -6677,20 +6686,22 @@ LBACD:                 PLA
                        RTS
 LBAD3:                 JSR     LB458
                        JMP     LBAB9
-ELIF:                  JSR     PROC
+ELSE:                  JSR     FNPROC
                        CPX     #$E5
-                       BNE     ELIF
+                       BNE     ELSE
 LBAE0:                 CLC
                        RTS
 SBAE2:                 LDA     $41
                        JSR     oswrch
                        LDA     $42
-                       BIT     $10A9
+                       DFB     $2C          ; BIT - skip the next instruction.
+CLG                    LDA     #$10                       
 LBAEC:                 JSR     oswrch
                        CLC
                        RTS
 GCOL:                  LDA     #$12
-                       BIT     $11A9
+                       DFB     $2C          ; BIT - skip the next instruction.
+COLOUR:                LDA     #$11
                        JSR     oswrch
 VDU:                   JSR     SB3F0
                        LDA     $41
@@ -6708,8 +6719,10 @@ LBB14:                 CLC
 PLOT:                  JSR     SB3F0
                        INC     txtoff
                        LDX     $41
-                       BIT     $05A2
-                       BIT     $04A2
+                       DFB     $2C          ; BIT - skip the next instruction.
+DRAW:                  LDX     #$05
+                       DFB     $2C          ; BIT - skip the next instruction.
+MOVE:                  LDX     #$04
                        LDA     #$19
                        JSR     oswrch
                        TXA
@@ -6720,7 +6733,8 @@ PLOT:                  JSR     SB3F0
                        JMP     SBAE2
 ENVELP:                LDA     #$08
                        SEC
-                       BIT     $07A9
+                       DFB     $2C          ; BIT - skip the next instruction.
+SOUND:                 LDA     #$07
                        PHA
                        ROR     $84
                        DEC     txtoff
@@ -6931,7 +6945,7 @@ NEXT:                  JSR     LBB6B
 LBCCF:                 JSR     SBBF0
                        BCC     REPEAT
                        JSR     LBC5E
-PROC:                  LDY     #$04
+FNPROC:                LDY     #$04
                        LDA     (txtptr),Y
                        STA     $50
 LBCDD:                 JSR     S8A01
@@ -6966,7 +6980,7 @@ LBD1C:                 CLC
                        RTS
 LBD1E:                 JSR     S89AF
                        BNE     LBD1C
-                       JMP     PROC
+                       JMP     FNPROC
 SBD26:                 JSR     SBBE4
                        PHP
                        JSR     SBBC8
@@ -7010,7 +7024,7 @@ SBD61:                 JSR     SAD17
                        LDA     $40
                        CLC
                        RTS
-TOK_FE:                JSR     SAD14
+EXEC:                  JSR     SAD14
                        LDA     #$EE
                        JSR     LAC94
                        BCS     LBD85
