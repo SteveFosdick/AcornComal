@@ -94,7 +94,7 @@ L8068:                 LDX     #$00
 L8084:                 LDA     #$1A
                        STA     erflag
                        JSR     S810E
-L808B:                 LDX     #$19
+L808B:                 LDX     #$19         ; immediate pair?
                        LDA     #$5F
                        JSR     L834C
                        JSR     S835B
@@ -155,9 +155,9 @@ L8103:                 LDX     txtptr
                        STX     $81
 L810B:                 JMP     L838F
 S810E:                 JSR     S835B
-                       LDA     #$3A
+                       LDA     #>errors         ; Immediate pair
                        STA     $2B
-                       LDA     #$82
+                       LDA     #<errors
                        STA     $2C
                        LDY     #$11
                        STY     $43
@@ -184,7 +184,7 @@ L813B:                 LDA     erflag
 L8146:                 LDA     $3E
                        BMI     L815A
                        LDY     #$08
-L814C:                 LDA     L8231,Y
+L814C:                 LDA     atline,Y
                        JSR     outchr
                        DEY
                        BPL     L814C
@@ -298,12 +298,33 @@ L8225:                 LDA     $0600,X
 L822C:                 CPX     $4F
                        BCC     L8225
                        RTS
-L8231:                 ASC     " enil ta Escape|@Can't ^y|@^I|@No room|@Bad program|@Syntax error|@Bad type|@Uncl"
-                       ASC     "osed at|@Name mismatch|@^e|@Not allowed|@Too complex|@No |@Bad ^L|@String too lon"
-                       ASC     "g|@Not found|@Bad value|@"
+atline:                ASC     " enil ta "
+errors:                ASC     "Escape|@"
+                       ASC     "Can't ^y|@"
+                       ASC     "^I|@"
+                       ASC     "No room|@"
+                       ASC     "Bad program|@"
+                       ASC     "Syntax error|@"
+                       ASC     "Bad type|@"
+                       ASC     "Unclosed at|@"
+                       ASC     "Name mismatch|@"
+                       ASC     "^e|@"
+                       ASC     "Not allowed|@"
+                       ASC     "Too complex|@"
+                       ASC     "No |@"
+                       ASC     "Bad ^L|@"
+                       ASC     "String too long|@"
+                       ASC     "Not found|@"
+                       ASC     "Bad value|@"
                        DFB     $9B,$00
-                       ASC     "Record overflow|@Not open|@Bad ^V|@Variable exists|@File open|@No ^g|@Parm block "
-                       ASC     "error|@^5|@|@"
+                       ASC     "Record overflow|@"
+                       ASC     "Not open|@"
+                       ASC     "Bad ^V|@"
+                       ASC     "Variable exists|@"
+                       ASC     "File open|@"
+                       ASC     "No ^g|@"
+                       ASC     "Parm block error|@"
+                       ASC     "^5|@|@"
 S832B:                 LDA     #$20
 outchr:                CMP     #$0D
                        BEQ     S835B
