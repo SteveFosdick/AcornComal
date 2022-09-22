@@ -16,10 +16,17 @@ lstkp                  EQU     $006F
 
 brkv                   EQU     $0202
 
+osfind                 EQU     $FFCE
+osbput                 EQU     $FFD4
+osbget                 EQU     $FFD7
+osargs                 EQU     $FFDA
+osfile                 EQU     $FFDD
+osrdch                 EQU     $FFE0
 osnewl                 EQU     $FFE7
 oswrch                 EQU     $FFEE
 osword                 EQU     $FFF1
 osbyte                 EQU     $FFF4
+oscli                  EQU     $FFF7
 
 L8000:                 JMP     lang
                        JMP     serv
@@ -398,7 +405,7 @@ escape:                LDA     #$7E
                        JSR     osbyte
                        BRK
 L83FE:                 DFB     $11
-S83FF:                 JSR     $FFE0
+S83FF:                 JSR     osrdch
 chkesc:                BIT     $FF
                        BMI     escape
 L8406:                 RTS
@@ -577,7 +584,7 @@ L8551:                 LDY     txtptr+1
                        BCC     L855B
                        INY
 L855B:                 TAX
-L855C:                 JSR     $FFF7
+L855C:                 JSR     oscli
                        CLC
                        RTS
 CONT:                  LDA     $80
@@ -733,7 +740,7 @@ LOAD:                  JSR     S86CD
                        LDA     #$00
                        STA     $0686
                        LDA     #$FF
-L869C:                 JSR     $FFDD
+L869C:                 JSR     osfile
                        JMP     L8681
 SAVE:                  JSR     S86CD
                        JSR     S8582
@@ -749,7 +756,7 @@ L86B8:                 STY     $068F
                        LDX     #$80
                        LDY     #$06
                        LDA     #$00
-                       JSR     $FFDD
+                       JSR     osfile
                        CLC
                        RTS
 DELETE:                JSR     S86CD
@@ -1115,7 +1122,7 @@ L8B40:                 LDY     #$00
 L8B50:                 JSR     S89C4
                        CMP     #$0D
                        BNE     L8B50
-                       TYA
+L8B57:                 TYA
                        CLC
                        ADC     $2B
                        STA     $2B
@@ -1263,16 +1270,16 @@ L8C6F:                 JMP     L8B83
 L8C72:                 DEY
                        LDA     $6D
                        CMP     #$CE
-                       BCC     $8C7D
+                       BCC     L8C7D
                        CMP     #$D5
-                       BCC     $8C88
-                       CMP     #$8C
-                       BEQ     $8C8B
+                       BCC     L8C88
+L8C7D:                 CMP     #$8C
+                       BEQ     L8C8B
                        CMP     #$93
-                       BEQ     $8C8B
+                       BEQ     L8C8B
                        JMP     S8B86
-                       JMP     $8B57
-                       JMP     L8B40
+L8C88:                 JMP     L8B57
+L8C8B:                 JMP     L8B40
 S8C8E:                 LDA     ($2B),Y
                        JSR     islc
                        BCS     L8C99
@@ -1698,9 +1705,12 @@ D90A4:                 DFB     $E0, $F0, $00, $F0, $00, $F0, $00, $E0 ; ........
                        DFB     $F0, $F0, $F0, $F0, $F0, $E2, $E3, $E4 ; ........
                        DFB     $EE, $E1, $41, $50, $50, $70, $50, $50 ; ..APPpPP
                        DFB     $50, $50, $50, $50, $50, $50, $D0, $D0 ; PPPPPP..
-                       DFB     $D0, $F0, $90, $90, $FF, $40, $3D, $3E ; .....@=>
-                       DFB     $3C, $2B, $2D, $2A, $2F, $86, $88, $5E ; <+-*/..^
-                       DFB     $3F, $21, $85, $89, $87                ; ?!...
+                       DFB     $D0, $F0, $90, $90, $FF, $40
+D90DA:                 DFB     $3D, $3E ; .....@=>
+                       DFB     $3C
+D90DD:                 DFB     $2B, $2D, $2A, $2F, $86, $88, $5E ; <+-*/..^
+                       DFB     $3F, $21
+D90E6:                 DFB     $85, $89, $87                ; ?!...
 tkadlo:                DFB     $34, $47, $47, $88, $88, $3D, $3D, $8C ; 4GG..==.
                        DFB     $88, $20, $20, $9D, $49, $39, $42, $28 ; .  .I9B(
                        DFB     $A8, $3F, $1D, $47, $47, $2F, $E8, $31 ; .?.GG/.1
@@ -1893,20 +1903,24 @@ L945D:                 LDY     $34
                        PLA
                        RTS
                        LDY     #$00
-                       BIT     $68A0
-                       BIT     $37A0
-                       BIT     $18A0
-                       BIT     $99A0
+                       DFB     $2C          ; BIT - skip the next instruction.
+L9470:                 LDY     #$68                       
+                       DFB     $2C          ; BIT - skip the next instruction.
+L9473:                 LDY     #$37                       
+                       DFB     $2C          ; BIT - skip the next instruction.
+L9476:                 LDY     #$18
+                       DFB     $2C          ; BIT - skip the next instruction.
+L9479:                 LDY     #$99
                        LDX     #$FF
-                       DEC     txtoff
-                       TYA
+S947D:                 DEC     txtoff
+L947F:                 TYA
                        PHA
                        TXA
-                       BEQ     $94A0
+                       BEQ     L94A0
                        INC     txtoff
                        PHA
                        JSR     S93D3
-                       BCS     $949C
+                       BCS     L949C
                        JSR     LB308
                        PLA
                        TAX
@@ -1915,221 +1929,224 @@ L945D:                 LDY     $34
                        DEX
                        LDA     $6A
                        CMP     #$2C
-                       BEQ     $947F
+                       BEQ     L947F
                        CLC
                        RTS
-                       PLA
+L949C:                 PLA
                        TAX
                        SEC
-                       BIT     $18
+                       DFB	   $24          ; BIT - skip the next instruction.
+L94A0:                 CLC                       
                        PLA
                        TAY
                        RTS
                        LDX     #$08
                        LDY     #$2A
-                       BNE     $947D
+                       BNE     S947D
                        LDX     #$02
                        BIT     $08A2
                        LDY     #$47
-                       BNE     $947D
+                       BNE     S947D
                        JSR     isxdig
-                       BCS     $94BA
+L94B6:                 BCS     L94BA
                        INC     txtoff
-                       RTS
+L94BA:                 RTS
                        JSR     isdig
-                       JMP     $94B6
+                       JMP     L94B6
                        JSR     islc
-                       JMP     $94B6
+                       JMP     L94B6
                        JSR     S897D
-                       JMP     $94B6
+                       JMP     L94B6
                        LDY     #$08
-                       CMP     $90DD,Y
-                       BEQ     $952A
+L94CF:                 CMP     D90DD,Y
+                       BEQ     L952A
                        DEY
-                       BPL     $94CF
+                       BPL     L94CF
                        SEC
                        RTS
                        LDA     #$02
                        JSR     LB308
                        STY     $2C
                        TAX
-                       LDA     (txtptr),Y
-                       CMP     $90DA,X
-                       BNE     $94ED
+L94E1:                 LDA     (txtptr),Y
+                       CMP     D90DA,X
+                       BNE     L94ED
                        INY
                        CPX     #$03
-                       BCS     $94F1
-                       DEX
-                       BPL     $94E1
+                       BCS     L94F1
+L94ED:                 DEX
+                       BPL     L94E1
                        INX
-                       TYA
+L94F1:                 TYA
                        SEC
                        SBC     $2C
-                       BEQ     $94FE
+                       BEQ     L94FE
                        CMP     #$03
-                       BCS     $94FE
-                       JMP     $BCEC
-                       JSR     $BCEC
-                       SEC
+                       BCS     L94FE
+                       JMP     SBCEC
+L94FE:                 JSR     SBCEC
+L9501:                 SEC
                        RTS
                        LDA     #$93
                        BIT     $8CA9
                        BIT     $8EA9
                        CMP     $6A
-                       BEQ     $952A
-                       JMP     $961B
-                       CMP     #$3A
-                       BNE     $9501
+                       BEQ     L952A
+                       JMP     L961B
+L9512:                 CMP     #$3A
+                       BNE     L9501
                        LDY     txtoff
                        INY
                        LDA     (txtptr),Y
                        CMP     #$3D
-                       BNE     $9501
-                       BEQ     $9540
+                       BNE     L9501
+                       BEQ     L9540
                        CMP     #$3D
-                       BNE     $9512
+                       BNE     L9512
                        LDA     #$96
-                       JSR     $9622
-                       INC     txtoff
+                       JSR     S9622
+L952A:                 INC     txtoff
                        CLC
                        RTS
                        LDY     txtoff
                        INY
                        LDA     (txtptr),Y
                        CMP     #$2D
-                       BEQ     $9540
+                       BEQ     L9540
                        LDY     txtoff
                        INY
                        LDA     (txtptr),Y
                        CMP     #$2B
-                       BNE     $9501
-                       DEY
+                       BNE     L9501
+L9540:                 DEY
                        LDA     (txtptr),Y
                        CMP     #$3A
-                       BNE     $9501
+                       BNE     L9501
                        LDA     #$96
                        STA     (txtptr),Y
                        INC     txtoff
-                       BNE     $952A
+                       BNE     L952A
                        LDA     $3E
                        ASL     
-                       RTS
+L9552:                 RTS
                        CMP     #$C4
-                       BCS     $9552
+                       BCS     L9552
                        CMP     #$BF
-                       BCS     $952A
+                       BCS     L952A
                        SEC
                        RTS
                        LDX     #$02
-                       CMP     $90E6,X
-                       BEQ     $952A
+L955F:                 CMP     D90E6,X
+                       BEQ     L952A
                        DEX
-                       BPL     $955F
+                       BPL     L955F
                        SEC
                        RTS
                        CMP     #$97
-                       BCC     $959A
+                       BCC     L959A
                        CMP     #$A1
-                       BCC     $952A
+                       BCC     L952A
                        RTS
                        CMP     #$A5
-                       BCC     $9501
+                       BCC     L9501
                        CMP     #$BA
-                       BCS     $9501
+                       BCS     L9501
                        JMP     SB304
-                       CMP     #$2C
-                       BEQ     $952A
+S957D:                 CMP     #$2C
+                       BEQ     L952A
                        CMP     #$3B
-                       BEQ     $952A
+                       BEQ     L952A
                        SEC
-                       RTS
-                       JSR     $957D
-                       BCC     $9586
+L9586:                 RTS
+                       JSR     S957D
+                       BCC     L9586
                        CMP     #$27
-                       BEQ     $952A
+                       BEQ     L952A
                        SEC
                        RTS
                        CMP     #$3F
-                       BEQ     $952A
+                       BEQ     L952A
                        CMP     #$21
-                       BEQ     $952A
-                       SEC
+L9598:                 BEQ     L952A
+L959A:                 SEC
                        RTS
                        CMP     #$7E
-                       BEQ     $952A
+                       BEQ     L952A
                        CMP     #$BA
-                       BCC     $959A
+                       BCC     L959A
                        CMP     #$BD
-                       BCC     $952A
+                       BCC     L952A
                        RTS
-                       JSR     $95C0
-                       BIT     $15E6
+                       JSR     S95C0
+                       DFB     $2C          ; BIT - skip the next instruction.
+L95AD:                 INC     txtoff
                        LDY     txtoff
                        LDA     (txtptr),Y
                        CMP     #$20
-                       BEQ     $95C0
+                       BEQ     S95C0
                        CMP     #$22
-                       BEQ     $9598
+                       BEQ     L9598
                        JSR     S8AB9
-                       BNE     $95AD
-                       LDA     #$22
-                       JMP     $9622
+                       BNE     L95AD
+S95C0:                 LDA     #$22
+                       JMP     S9622
                        INC     txtoff
                        JSR     S963F
                        LDA     D90A4,Y
                        AND     #$0F
                        TAX
                        LDY     #$47
-                       JSR     $947D
+                       JSR     S947D
                        CPX     #$00
-                       BNE     $95F2
-                       CLC
+                       BNE     L95F2
+L95D9:                 CLC
                        RTS
                        LDY     txtoff
                        CMP     #$22
-                       BEQ     $95FA
+                       BEQ     L95FA
                        LDX     #$FF
-                       BIT     $C8
+                       DFB     $24          ; BIT - skip the next instruction.
+L95E4:                 INY
                        INX
                        LDA     (txtptr),Y
                        JSR     S8AB9
-                       BNE     $95E4
+                       BNE     L95E4
                        STY     txtoff
                        TXA
-                       BNE     $95D9
-                       SEC
+                       BNE     L95D9
+L95F2:                 SEC
                        RTS
                        CMP     #$22
                        BNE     L9653
                        LDY     txtoff
-                       INY
+L95FA:                 INY
                        LDA     (txtptr),Y
                        CMP     #$22
-                       BEQ     $9607
+                       BEQ     L9607
                        CMP     #$0D
-                       BNE     $95FA
+                       BNE     L95FA
                        SEC
                        RTS
-                       INY
+L9607:                 INY
                        LDA     (txtptr),Y
                        CMP     #$22
-                       BEQ     $95FA
+                       BEQ     L95FA
                        STY     txtoff
                        CLC
                        RTS
                        LDX     #$FF
                        BIT     $FEA2
                        LDY     #$00
-                       BEQ     $9625
-                       PHA
+                       BEQ     L9625
+L961B:                 PHA
                        LDA     #$20
-                       JSR     $9622
+                       JSR     S9622
                        PLA
-                       TAX
+S9622:                 TAX
                        LDY     txtoff
-                       TYA
+L9625:                 TYA
                        PHA
-                       LDA     (txtptr),Y
+L9627:                 LDA     (txtptr),Y
                        PHA
                        TXA
                        STA     (txtptr),Y
@@ -2137,7 +2154,7 @@ L945D:                 LDY     $34
                        INY
                        TAX
                        CMP     #$0D
-                       BNE     $9627
+                       BNE     L9627
                        STA     (txtptr),Y
                        PLA
                        TAY
@@ -2166,25 +2183,25 @@ L9655:                 CLC
                        LDA     (txtptr),Y
                        LDY     #$84
                        CMP     #$01
-                       BEQ     $9679
+                       BEQ     L9679
                        JSR     S93D3
                        PLA
-                       BCS     $9676
+                       BCS     L9676
                        LDX     txtoff
                        STA     txtoff
                        INX
                        TXA
                        PHA
                        LDA     #$01
-                       JSR     $9622
+                       JSR     S9622
                        PLA
-                       STA     txtoff
+L9676:                 STA     txtoff
                        RTS
-                       PLA
+L9679:                 PLA
                        INC     txtoff
                        JMP     S93D3
                        INC     txtoff
-                       JMP     $952A
+                       JMP     L952A
 L9684:                 BRK
 L9685:                 DFB     $21                                    ; !
 S9686:                 JSR     SB2EB
@@ -3712,9 +3729,7 @@ SA2BE:                 JSR     S9F29
                        JMP     S9DC2
 LA2C7:                 JMP     L9C95
 LA2CA:                 BRK
-                       TRB     $C981
-                       BPL     $A2D0
-                       BRK
+                       DFB     $1C,$81,$C9,$10,$00,$00
 LA2D1:                 DFB     $6F, $15, $77, $7A, $61, $81, $49, $0F ; o.wza.I.
                        DFB     $DA, $A2                               ; ..
 SA2DB:                 LDA     #$D6
@@ -4321,7 +4336,7 @@ LA7CD:                 JSR     SA7E3
                        LDA     #$FF
                        BMI     LA7B8
 SA7E3:                 LDY     $75
-                       JSR     $FFD7
+                       JSR     osbget
                        BCC     LA809
                        BRK
 LA7EB:                 DFB     $2A                                    ; *
@@ -4382,7 +4397,7 @@ LA85F:                 CPY     #$8B
                        BEQ     LA874
 SA863:                 LDX     #$00
                        LDY     #$06
-                       JSR     $FFCE
+                       JSR     osfind
                        TAY
                        BEQ     LA897
                        LDX     $71
@@ -4393,9 +4408,9 @@ LA874:                 LDA     #$C0
                        JSR     SA863
                        LDX     #$50
                        LDA     #$02
-                       JSR     $FFDA
+                       JSR     osargs
                        LDA     #$01
-                       JSR     $FFDA
+                       JSR     osargs
                        LDX     $71
                        LDY     #$00
 LA889:                 LDA     $0050,Y
@@ -4425,7 +4440,7 @@ CLOSE:                 JSR     S89B1
                        PLA
                        TAY
 SA8BC:                 LDA     #$00
-                       JSR     $FFCE
+                       JSR     osfind
                        CLC
                        RTS
 LA8C3:                 LDX     #$33
@@ -4499,7 +4514,7 @@ LA93C:                 LDX     $71
                        BRK
 LA949:                 DFB     $21                                    ; !
 SA94A:                 LDY     $75
-                       JMP     $FFD4
+                       JMP     osbput
 LA94F:                 CLC
                        RTS
 LA951:                 JSR     SA471
@@ -4563,7 +4578,7 @@ LA9B3:                 JSR     SA4BA
 SA9CE:                 LDA     #$01
 SA9D0:                 LDX     #$41
                        LDY     $75
-                       JMP     $FFDA
+                       JMP     osargs
 SELECT:                JSR     expr1
                        LDA     $4F
                        BNE     LA9E5
@@ -4600,7 +4615,7 @@ FEXT:                  JSR     SAA32
                        TAY
                        LDX     #$41
                        LDA     #$02
-                       JSR     $FFDA
+                       JSR     osargs
                        JMP     LB932
 FEOF:                  JSR     SAA32
                        TAX
@@ -6963,7 +6978,7 @@ LBCDD:                 JSR     S8A01
                        CMP     $50
                        BNE     LBCDD
 SBCEA:                 LDY     #$05
-                       STY     txtoff
+SBCEC:                 STY     txtoff
                        JMP     LB308
 WHILE:                 JSR     SBA51
                        BEQ     LBD1E
