@@ -17,11 +17,16 @@ osnewl                 EQU     $FFE7
 oswrch                 EQU     $FFEE
 osword                 EQU     $FFF1
 osbyte                 EQU     $FFF4
+
 L8000:                 JMP     lang
                        JMP     serv
-L8006:                 DFB     $C2, $0E, $10                          ; ...
-D8009:                 DFB     $43, $4F, $4D, $41, $4C, $00, $28, $43 ; COMAL.(C
-                       DFB     $29, $41, $63, $6F, $72, $6E, $00      ; )Acorn.
+                       DFB     %11000010    ; ROM type.
+                       DFB     copyr-L8000
+                       DFB     $10          ; Version number.
+title:                 ASC     "COMAL"
+copyr:                 DFB     $00
+                       ASC     "(C)Acorn"
+                       DFB     $00
 serv:                  PHA
                        CMP     #$04
                        BNE     notcmd
@@ -32,7 +37,7 @@ L8021:                 LDA     ($F2),Y
                        AND     #$DF
                        INX
                        INY
-                       CMP     D8009,X
+                       CMP     title,X
                        BEQ     L8021
                        CPX     #$05
                        BCS     L803E
@@ -56,7 +61,7 @@ notcmd:                CMP     #$09
                        PHA
                        JSR     osnewl
                        LDX     #$00
-L8054:                 LDA     D8009,X
+L8054:                 LDA     title,X
                        BEQ     L805F
                        JSR     oswrch
                        INX
