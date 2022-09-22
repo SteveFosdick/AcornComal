@@ -3463,12 +3463,12 @@ L9EFC:                 LSR     $57
 L9F14:                 DEY
                        BNE     L9EFC
                        RTS
-FDEG:                  LDY     #$EC
-                       LDA     #$A2
+FDEG:                  LDY     #>FA2EC
+                       LDA     #<FA2EC
                        BNE     L9F25
 FLOG:                  JSR     FLN
-                       LDY     #$13
-                       LDA     #$A1
+                       LDY     #>FA113
+                       LDA     #<FA113
 L9F25:                 STY     $62
                        STA     $63
 S9F29:                 JSR     S9EC8
@@ -3692,8 +3692,8 @@ LA0D9:                 TXA
                        JSR     S9DC7
                        LDA     #$7B
                        JSR     S9C6A
-                       LDA     #$1D
-                       LDY     #$A1
+                       LDA     #>FA11D
+                       LDY     #<FA11D
                        JSR     SA141
                        JSR     SA0A7
                        JSR     S9F29
@@ -3704,19 +3704,23 @@ LA0D9:                 TXA
                        SEC
                        SBC     #$81
                        JSR     S9BD2
-                       LDA     #$18
+                       LDA     #>FA118
                        STA     $62
-                       LDA     #$A1
+                       LDA     #<FA118
                        STA     $63
                        JSR     S9F29
                        JSR     SA0B1
                        JMP     S9DC2
-LA113:                 DFB     $7F, $5E, $5B, $D8, $AA, $80, $31, $72 ; .^[...1r
-                       DFB     $17, $F8, $06, $7A, $12, $38, $A5, $0B ; ...z.8..
-                       DFB     $88, $79, $0E, $9F, $F3, $7C, $2A, $AC ; .y...|*.
-                       DFB     $3F, $B5, $86, $34, $01, $A2, $7A, $7F ; ?..4..z.
-                       DFB     $63, $8E, $37, $EC, $82, $3F, $FF, $FF ; c.7..?..
-                       DFB     $C1, $7F, $FF, $FF, $FF, $FF           ; ......
+FA113:                 DFB     $7F, $5E, $5B, $D8, $AA
+FA118:                 DFB     $80, $31, $72, $17, $F8
+FA11D:                 DFB     $06          ; Number of floats.
+                       DFB     $7A, $12, $38, $A5, $0B
+                       DFB     $88, $79, $0E, $9F, $F3
+                       DFB     $7C, $2A, $AC, $3F, $B5
+                       DFB     $86, $34, $01, $A2, $7A
+                       DFB     $7F, $63, $8E, $37, $EC
+                       DFB     $82, $3F, $FF, $FF, $C1
+                       DFB     $7F, $FF, $FF, $FF, $FF
 SA141:                 STA     $64
                        STY     $65
                        JSR     S9C68
@@ -3789,17 +3793,21 @@ LA1D4:                 LDA     $47
                        STA     $57
                        STA     $54
                        JSR     S9DC7
-                       LDA     #$F5
-                       LDY     #$A1
+                       LDA     #>FA1F5
+                       LDY     #<FA1F5
                        JSR     SA141
                        JMP     LA344
-LA1F5:                 DFB     $09, $85, $A3, $59, $E8, $67, $80, $1C ; ...Y.g..
-                       DFB     $9D, $07, $36, $80, $57, $BB, $78, $DF ; ..6.W.x.
-                       DFB     $80, $CA, $9A, $0E, $83, $84, $8C, $BB ; ........
-                       DFB     $CA, $6E, $81, $95, $96, $06, $DE, $81 ; .n......
-                       DFB     $0A, $C7, $6C, $52, $7F, $7D, $AD, $90 ; ..lR.}..
-                       DFB     $A1, $82, $FB, $62, $57, $2F, $80, $6D ; ...bW/.m
-                       DFB     $63, $38, $2C                          ; c8,
+FA1F5:                 DFB     $09          ; Number of floats.
+                       DFB     $85, $A3, $59, $E8, $67
+                       DFB     $80, $1C, $9D, $07, $36
+                       DFB     $80, $57, $BB, $78, $DF
+                       DFB     $80, $CA, $9A, $0E, $83
+                       DFB     $84, $8C, $BB, $CA, $6E
+                       DFB     $81, $95, $96, $06, $DE
+                       DFB     $81, $0A, $C7, $6C, $52
+                       DFB     $7F, $7D, $AD, $90, $A1
+                       DFB     $82, $FB, $62, $57, $2F
+                       DFB     $80, $6D, $63, $38, $2C
 FCOS:                  JSR     SA26B
                        INC     $61
                        JMP     SA233
@@ -3864,23 +3872,27 @@ SA2BE:                 JSR     S9F29
                        JMP     S9DC2
 LA2C7:                 JMP     L9C95
 LA2CA:                 BRK
-                       DFB     $1C,$81,$C9,$10,$00,$00
-LA2D1:                 DFB     $6F, $15, $77, $7A, $61, $81, $49, $0F ; o.wza.I.
-                       DFB     $DA, $A2                               ; ..
-SA2DB:                 LDA     #$D6
+                       DFB     $1C
+FA2CC                  DFB     $81, $C9, $10, $00, $00
+FA2D1:                 DFB     $6F, $15, $77, $7A, $61
+FA2D6:                 DFB     $81, $49, $0F, $DA, $A2
+SA2DB:                 LDA     #>FA2D6
                        BNE     LA2E5
-SA2DF:                 LDA     #$D1
+SA2DF:                 LDA     #>FA2D1
                        BNE     LA2E5
-SA2E3:                 LDA     #$CC
+SA2E3:                 LDA     #>FA2CC
 LA2E5:                 STA     $62
-                       LDA     #$A2
+                       LDA     #<FACC
                        STA     $63
                        RTS
-LA2EC:                 DFB     $86, $65, $2E, $E0, $D3, $05, $84, $8A ; .e......
-                       DFB     $EA, $0C, $1B, $84, $1A, $BE, $BB, $2B ; .......+
-                       DFB     $84, $37, $45, $55, $AB, $82, $D5, $55 ; .7EU...U
-                       DFB     $57, $7C, $83, $C0, $00, $00, $05, $81 ; W|......
-                       DFB     $00, $00, $00, $00                     ; ....
+FA2EC:                 DFB     $86, $65, $2E, $E0, $D3
+FA2F1:                 DFB     $05          ; Number of floats.
+                       DFB     $84, $8A, $EA, $0C, $1B
+                       DFB     $84, $1A, $BE, $BB, $2B
+                       DFB     $84, $37, $45, $55, $AB
+                       DFB     $82, $D5, $55, $57, $7C
+                       DFB     $83, $C0, $00, $00, $05
+                       DFB     $81, $00, $00, $00, $00
 FEXP:                  LDA     $47
                        CMP     #$87
                        BCC     LA327
@@ -3894,25 +3906,29 @@ LA31E:                 LDA     $45
 LA325:                 BRK
 LA326:                 DFB     $21                                    ; !
 LA327:                 JSR     S9D57
-                       LDA     #$4F
-                       LDY     #$A3
+                       LDA     #>FA34F
+                       LDY     #<FA34F
                        JSR     SA141
                        JSR     S9C65
-                       LDA     #$4A
+                       LDA     #>FA34A
                        STA     $62
-                       LDA     #$A3
+                       LDA     #<FA34A
                        STA     $63
                        JSR     S9C98
                        LDA     $61
                        JSR     SA378
 LA344:                 JSR     SA0AE
                        JMP     S9F29
-LA34A:                 DFB     $82, $2D, $F8, $54, $58, $07, $83, $E0 ; .-.TX...
-                       DFB     $20, $86, $5B, $82, $80, $53, $93, $B8 ;  .[..S..
-                       DFB     $83, $20, $00, $06, $A1, $82, $00, $00 ; . ......
-                       DFB     $21, $63, $82, $C0, $00, $00, $02, $82 ; !c......
-                       DFB     $80, $00, $00, $0C, $81, $00, $00, $00 ; ........
-                       DFB     $00, $81, $00, $00, $00, $00           ; ......
+FA34A:                 DFB     $82, $2D, $F8, $54, $58
+FA34F:                 DFB     $07          ; Number of floats.
+                       DFB     $83, $E0, $20, $86, $5B
+                       DFB     $82, $80, $53, $93, $B8
+                       DFB     $83, $20, $00, $06, $A1
+                       DFB     $82, $00, $00, $21, $63
+                       DFB     $82, $C0, $00, $00, $02
+                       DFB     $82, $80, $00, $00, $0C
+                       DFB     $81, $00, $00, $00, $00
+                       DFB     $81, $00, $00, $00, $00
 SA378:                 TAX
                        BPL     LA384
                        DEX
