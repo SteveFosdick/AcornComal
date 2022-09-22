@@ -155,7 +155,7 @@ L8103:                 LDX     txtptr
                        STX     $81
 L810B:                 JMP     L838F
 S810E:                 JSR     S835B
-                       LDA     #>errors         ; Immediate pair
+                       LDA     #>errors
                        STA     $2B
                        LDA     #<errors
                        STA     $2C
@@ -196,9 +196,9 @@ S815D:                 STA     $67
                        BEQ     L81A3
                        TAX
                        BPL     L81A0
-                       LDA     #$7C
+                       LDA     #>tokens
                        STA     $29
-                       LDA     #$87
+                       LDA     #<tokens
                        STA     $2A
                        LDA     #$FD
                        STA     $6D
@@ -858,14 +858,128 @@ L876E:                 LDY     #$05
                        BCS     L875C
 L8777:                 JSR     S8A01
                        BCC     L875C
-L877C:                 ASC     "CLOSE^DREAD ONL^YOL^DDEBU^GCON^TLIS^TEDI^TRENUMBE^RAUT^OPRIN^TFO^RWHIL^EI^FREPEA^T"
-                       ASC     "CAS^EPRO^CFUN^CELI^FWHE^NELS^EOTHERWIS^EIMPOR^TRETUR^NNEX^TEN^DUNTI^LCOLOU^RENVEL"
-                       ASC     "OP^ESOUN^DPLO^TMOV^EGCO^LDRA^WCLOS^EREA^DWRIT^EINPU^TOPE^NOSCL^IDI^MVD^USELECT OU"
-                       ASC     "TPU^TDELET^ELOA^DSAV^ERU^NDAT^A/^/DE^LGOT^OEXE^CRESTOR^ESTO^PNE^WCL^SCL^GNUL^LCLE"
-                       ASC     "A^RZON^EWIDT^HTIM^EPAG^EMOD^EPOINT^(RND^(STR^$INKEY^$CHR^$US^RNO^TINKE^YEX^TEO^FA"
-                       ASC     "DVA^LAB^SSG^NIN^TTA^NSQ^RSI^NRA^DLO^GL^NEX^PDE^GCO^SAT^NAS^NAC^SVA^LOR^DLE^NGET^$"
-                       ASC     "VPO^SFRE^ESIZ^EPO^SGE^TEO^DCOUN^TTRU^EP^IFALS^E^:USIN^GT^OTHE^NTAB^(STE^PRE^FRAND"
-                       ASC     "O^MO^FFIL^ED^OAPPEN^DI^NO^RMO^DEO^RDI^VAN^D|@"
+tokens:                ASC     "CLOSE^D"
+                       ASC     "READ ONL^Y"
+                       ASC     "OL^D"
+                       ASC     "DEBU^G"
+                       ASC     "CON^T"
+                       ASC     "LIS^T"
+                       ASC     "EDI^T"
+                       ASC     "RENUMBE^R"
+                       ASC     "AUT^O"
+                       ASC     "PRIN^T"
+                       ASC     "FO^R"
+                       ASC     "WHIL^E"
+                       ASC     "I^F"
+                       ASC     "REPEA^T"
+                       ASC     "CAS^E"
+                       ASC     "PRO^C"
+                       ASC     "FUN^C"
+                       ASC     "ELI^F"
+                       ASC     "WHE^N"
+                       ASC     "ELS^E"
+                       ASC     "OTHERWIS^E"
+                       ASC     "IMPOR^T"
+                       ASC     "RETUR^N"
+                       ASC     "NEX^T"
+                       ASC     "EN^D"
+                       ASC     "UNTI^L"
+                       ASC     "COLOU^R"
+                       ASC     "ENVELOP^E"
+                       ASC     "SOUN^D"
+                       ASC     "PLO^T"
+                       ASC     "MOV^E"
+                       ASC     "GCO^L"
+                       ASC     "DRA^W"
+                       ASC     "CLOS^E"
+                       ASC     "REA^D"
+                       ASC     "WRIT^E"
+                       ASC     "INPU^T"
+                       ASC     "OPE^N"
+                       ASC     "OSCL^I"
+                       ASC     "DI^M"
+                       ASC     "VD^U"
+                       ASC     "SELECT OUTPU^T"
+                       ASC     "DELET^E"
+                       ASC     "LOA^D"
+                       ASC     "SAV^E"
+                       ASC     "RU^N"
+                       ASC     "DAT^A"
+                       ASC     "/^/"
+                       ASC     "DE^L"
+                       ASC     "GOT^O"
+                       ASC     "EXE^C"
+                       ASC     "RESTOR^E"
+                       ASC     "STO^P"
+                       ASC     "NE^W"
+                       ASC     "CL^S"
+                       ASC     "CL^G"
+                       ASC     "NUL^L"
+                       ASC     "CLEA^R"
+                       ASC     "ZON^E"
+                       ASC     "WIDT^H"
+                       ASC     "TIM^E"
+                       ASC     "PAG^E"
+                       ASC     "MOD^E"
+                       ASC     "POINT^("
+                       ASC     "RND^("
+                       ASC     "STR^$"
+                       ASC     "INKEY^$"
+                       ASC     "CHR^$"
+                       ASC     "US^R"
+                       ASC     "NO^T"
+                       ASC     "INKE^Y"
+                       ASC     "EX^T"
+                       ASC     "EO^F"
+                       ASC     "ADVA^L"
+                       ASC     "AB^S"
+                       ASC     "SG^N"
+                       ASC     "IN^T"
+                       ASC     "TA^N"
+                       ASC     "SQ^R"
+                       ASC     "SI^N"
+                       ASC     "RA^D"
+                       ASC     "LO^G"
+                       ASC     "L^N"
+                       ASC     "EX^P"
+                       ASC     "DE^G"
+                       ASC     "CO^S"
+                       ASC     "AT^N"
+                       ASC     "AS^N"
+                       ASC     "AC^S"
+                       ASC     "VA^L"
+                       ASC     "OR^D"
+                       ASC     "LE^N"
+                       ASC     "GET^$"
+                       ASC     "VPO^S"
+                       ASC     "FRE^E"
+                       ASC     "SIZ^E"
+                       ASC     "PO^S"
+                       ASC     "GE^T"
+                       ASC     "EO^D"
+                       ASC     "COUN^T"
+                       ASC     "TRU^E"
+                       ASC     "P^I"
+                       ASC     "FALS^E"
+                       ASC     "^:"
+                       ASC     "USIN^G"
+                       ASC     "T^O"
+                       ASC     "THE^N"
+                       ASC     "TAB^("
+                       ASC     "STE^P"
+                       ASC     "RE^F"
+                       ASC     "RAND"
+                       ASC     "O^M"
+                       ASC     "O^F"
+                       ASC     "FIL^E"
+                       ASC     "D^O"
+                       ASC     "APPEN^D"
+                       ASC     "I^N"
+                       ASC     "O^R"
+                       ASC     "MO^D"
+                       ASC     "EO^R"
+                       ASC     "DI^V"
+                       ASC     "AN^D|@"
 S8967:                 JSR     LB308
 S896A:                 TXA
 islc:                  CMP     #$7B
@@ -1956,7 +2070,7 @@ L947F:                 TYA
 L949C:                 PLA
                        TAX
                        SEC
-                       DFB	   $24          ; BIT - skip the next instruction.
+                       DFB     $24          ; BIT - skip the next instruction.
 L94A0:                 CLC                       
                        PLA
                        TAY
