@@ -791,9 +791,9 @@ L86D3:                 STA     $0680,X
                        BPL     L86D3
                        LDA     page+1
                        STA     $0683
-                       LDA     #$8F
+                       LDA     #$8F         ; ROM address or token reference?
                        STA     $0686
-                       LDA     #$83
+                       LDA     #$83         ; ROM address or token reference?
                        STA     $0687
                        LDA     #$00
                        STA     $0680
@@ -1325,9 +1325,9 @@ L8BC1:                 JSR     S89C4
                        BEQ     L8BC1
 L8BD7:                 LDA     #$FD
                        STA     $6D
-                       LDA     #$7C
+                       LDA     #>tokens
                        STA     $29
-                       LDA     #$87
+                       LDA     #<tokens
                        STA     $2A
 L8BE3:                 LDY     #$FF
 L8BE5:                 INY
