@@ -1,0 +1,14 @@
+                       ORG     $B800
+HIGH				   EQU     1
+start:                 JMP     lang
+                       JMP     serv
+                       DFB     %11100010    ; ROM type.
+                       DFB     copyr-start
+                       DFB     $10          ; Version number.
+title:                 ASC     "HICOMAL"
+copyr:                 DFB     $00
+                       ASC     "(C)A"
+                       DFB     $00
+					   DFW	   start
+                       INCLUDE service
+                       CHN     source

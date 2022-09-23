@@ -1,3 +1,9 @@
 *.rom
 *.lst
 *.dis
+hifile
+hifilst
+hirmlst
+hirom
+lowlst
+lowrom

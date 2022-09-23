@@ -1,0 +1,14 @@
+                       ORG     $B84B
+HIGH				   EQU     1
+start:                 JMP     lang
+                       RTS
+                       DFW	   0
+                       DFB     %11000010    ; ROM type.
+                       DFB     copyr-start
+                       DFB     $10          ; Version number.
+title:                 ASC     "HICOMAL"
+copyr:                 DFB     $00
+                       ASC     "(C)Acorn"
+                       DFB     $00
+
+                       CHN     source

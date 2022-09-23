@@ -1,0 +1,41 @@
+serv:                  PHA
+                       CMP     #$04
+                       BNE     notcmd
+                       TYA
+                       PHA
+                       LDX     #$FF
+L8021:                 LDA     ($F2),Y
+                       AND     #$DF
+                       INX
+                       INY
+                       CMP     title,X
+                       BEQ     L8021
+                       CPX     #$05
+                       BCS     L803E
+                       CPX     #$01
+                       BEQ     L8038
+                       CMP     #$0E
+                       BEQ     L803E
+L8038:                 LDX     $F4
+                       PLA
+                       TAY
+svdone:                PLA
+                       RTS
+L803E:                 CMP     #' '
+                       BCS     L8038
+                       LDX     $F4
+                       LDA     #$8E
+                       JMP     osbyte
+notcmd:                CMP     #$09
+                       BNE     svdone
+                       TYA
+                       PHA
+                       JSR     osnewl
+                       LDX     #$00
+L8054:                 LDA     title,X
+                       BEQ     L805F
+                       JSR     oswrch
+                       INX
+                       BNE     L8054
+L805F:                 JSR     osnewl
+                       JMP     L8038

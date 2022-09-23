@@ -1,4 +1,3 @@
-                       ORG     $8000
 himem                  EQU     $0000
 lomem                  EQU     $0002
 aestkp                 EQU     $0004
@@ -28,56 +27,6 @@ osword                 EQU     $FFF1
 osbyte                 EQU     $FFF4
 oscli                  EQU     $FFF7
 
-L8000:                 JMP     lang
-                       JMP     serv
-                       DFB     %11000010    ; ROM type.
-                       DFB     copyr-L8000
-                       DFB     $10          ; Version number.
-title:                 ASC     "COMAL"
-copyr:                 DFB     $00
-                       ASC     "(C)Acorn"
-                       DFB     $00
-serv:                  PHA
-                       CMP     #$04
-                       BNE     notcmd
-                       TYA
-                       PHA
-                       LDX     #$FF
-L8021:                 LDA     ($F2),Y
-                       AND     #$DF
-                       INX
-                       INY
-                       CMP     title,X
-                       BEQ     L8021
-                       CPX     #$05
-                       BCS     L803E
-                       CPX     #$01
-                       BEQ     L8038
-                       CMP     #$0E
-                       BEQ     L803E
-L8038:                 LDX     $F4
-                       PLA
-                       TAY
-svdone:                PLA
-                       RTS
-L803E:                 CMP     #' '
-                       BCS     L8038
-                       LDX     $F4
-                       LDA     #$8E
-                       JMP     osbyte
-notcmd:                CMP     #$09
-                       BNE     svdone
-                       TYA
-                       PHA
-                       JSR     osnewl
-                       LDX     #$00
-L8054:                 LDA     title,X
-                       BEQ     L805F
-                       JSR     oswrch
-                       INX
-                       BNE     L8054
-L805F:                 JSR     osnewl
-                       JMP     L8038
 S8065:                 JSR     S902F
 L8068:                 LDX     #$00
                        STX     pdbugd

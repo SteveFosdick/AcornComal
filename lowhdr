@@ -1,0 +1,14 @@
+                       ORG     $8000
+HIGH				   EQU     0
+start:                 JMP     lang
+                       JMP     serv
+                       DFB     %11000010    ; ROM type.
+                       DFB     copyr-start
+                       DFB     $10          ; Version number.
+title:                 ASC     "COMAL"
+copyr:                 DFB     $00
+                       ASC     "(C)Acorn"
+                       DFB     $00
+
+                       INCLUDE service
+                       CHN     source
