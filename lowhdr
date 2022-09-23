@@ -1,5 +1,5 @@
                        ORG     $8000
-HIGH				   EQU     0
+HIGH                   EQU     0
 start:                 JMP     lang
                        JMP     serv
                        DFB     %11000010    ; ROM type.
