@@ -1,7 +1,6 @@
 # AcornComal
 A Disassembly of Acornsoft COMAL for the BBC Microcomputer
 
----------!---------!---------!---------!---------!---------!---------!---------!
 This is a disassembly of Acornsoft COMAL for the BBC Microcomputer, initially
 with a view to creating a "High" version to run the 6502 2nd processor.
 
