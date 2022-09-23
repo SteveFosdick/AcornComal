@@ -1898,9 +1898,13 @@ D9315:                 DFB     $3A, $2B, $9D, $62, $62, $AA, $9D, $9D ; :+.bb...
                        DFB     $CF, $E1, $CF, $EC, $D0, $D0, $DB, $D0 ; ........
                        DFB     $DF, $E2, $D0, $CF, $EE, $E6, $D0, $D0 ; ........
                        DFB     $D0, $D0, $EB, $CF, $CF, $9A, $EF, $F0 ; ........
-                       DFB     $F2, $D0, $9D, $20, $CD, $89, $20, $3F ; ... .. ?
-                       DFB     $96, $A9, $20, $39, $A4, $90, $F0, $02 ; .. 9....
-                       DFB     $D0, $10                               ; ..
+                       DFB     $F2, $D0, $9D
+L93A0:                 JSR     S89CD    
+                       JSR     S963F    
+                       LDA     #$20
+                       AND     D90A4,Y  
+                       BEQ     L93AF    
+                       BNE     L93BF    
 L93AF:                 LDA     #$1B
                        STA     erflag
                        SEC
@@ -1909,7 +1913,7 @@ S93B5:                 LDA     #$16
                        STA     erflag
                        JSR     LB308
                        JSR     S963F
-                       LDA     $3E
+L93BF:                 LDA     $3E
                        AND     D90A4,Y
                        BEQ     L93AF
                        LDA     D90A4,Y
