@@ -1,3 +1,6 @@
+					   LOAD	   start
+					   EXEC    start
+
 himem                  EQU     $0000
 lomem                  EQU     $0002
 aestkp                 EQU     $0004
