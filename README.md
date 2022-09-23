@@ -13,9 +13,9 @@ example: https://github.com/SteveFosdick/laxasm
 Three versions are buildable from the same source depending on which
 'head' file the assembler is invoked with:
 
-lowhdr  - ROM low version at &8000 for ROM, like the orginal.
-hirmhdr - ROM high version (&B800) for a machine with 2nd processor.
-hifihdr - RAM high version (&B84B) to load on demand in 2nd processor.
+- lowhdr  - ROM low version at &8000 for ROM, like the orginal.
+- hirmhdr - ROM high version (&B800) for a machine with 2nd processor.
+- hifihdr - RAM high version (&B84B) to load on demand in 2nd processor.
 
 If the included Makefile is used (Linux assumed) all three versions
 are built.
