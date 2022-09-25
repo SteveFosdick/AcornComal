@@ -1,4 +1,10 @@
-all: comal.dis lowrom hirom hifile
+all: comal.dis hicomal.ssd
+
+hicomal.ssd: lowrom hirom hifile
+	cp blank.ssd hicomal.ssd
+	afscp lowrom hicomal.ssd:lowrom
+	afscp hirom hicomal.ssd:hirom
+	afscp hifile hicomal.ssd:hifile
 
 CCDIS = ccdis -L -b 0x8000 -l labels -s comal.rom
 
