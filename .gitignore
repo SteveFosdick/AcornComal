@@ -1,9 +1,14 @@
 *.rom
 *.lst
 *.dis
+*.inf
 hifile
 hifilst
 hirmlst
 hirom
 lowlst
 lowrom
+hifisym
+hirmsym
+lowsym
+hicomal.ssd
