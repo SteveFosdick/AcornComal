@@ -86,3 +86,4 @@ BA1C:                                 .word   $b895, $b99f, $b917, $b8f1, $b89f,
                                               MODE   PAGE   TIME   WIDTH  ZONE
 BA2C:                                 .word   $b94b, $b8b9, $b93f, $b863, $b880
 
+91DC - high bytes.

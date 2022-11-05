@@ -6,12 +6,15 @@ lomem                  EQU     $0002
 aestkp                 EQU     $0004
 page                   EQU     $0006
 vartop                 EQU     $0008
+width                  EQU     $000A
+count                  EQU     $000B
 prgtop                 EQU     $000C
 locall                 EQU     $000E
 localh                 EQU     $0010
 closed                 EQU     $0012
 txtptr                 EQU     $0013
 txtoff                 EQU     $0015
+eodflag                EQU     $002E
 erflag                 EQU     $003F
 pdbugd                 EQU     $0068
 lstkp                  EQU     $006F
@@ -41,7 +44,7 @@ L8068:                 LDX     #$00
                        JSR     S810E
                        JSR     L8A0F
                        BMI     L8084
-                       JSR     S81C1
+                       JSR     list_line
                        BCS     L808B
 L8084:                 LDA     #$1A
                        STA     erflag
@@ -49,7 +52,7 @@ L8084:                 LDA     #$1A
 L808B:                 LDX     #$19         ; immediate pair?
                        LDA     #$5F
                        JSR     L834C
-                       JSR     S835B
+                       JSR     newline
                        JMP     chkesc
 L8098:                 SEC
                        RTS
@@ -68,24 +71,24 @@ S80AC:                 JSR     S81AF
                        JSR     S834F
                        LDA     #'^^'
                        JSR     outchr
-                       JMP     S835B
+                       JMP     newline
 brkhnd:                STA     erflag
                        LDX     $2D
                        BEQ     L80C8
                        TXS
-                       JSR     S8AF6
+                       JSR     pop_txtptr
 L80C8:                 LDY     #$00
                        LDA     ($FD),Y
                        BEQ     L80E4
                        STA     erflag
                        BPL     L80E4
-                       JSR     S835B
+                       JSR     newline
 L80D5:                 INY
                        LDA     ($FD),Y
                        BEQ     L80DF
                        JSR     outchr
                        BCS     L80D5
-L80DF:                 JSR     S835B
+L80DF:                 JSR     newline
                        BCS     L80ED
 L80E4:                 JSR     S810E
                        LDA     erflag
@@ -106,7 +109,7 @@ L8103:                 LDX     txtptr
                        LDX     txtptr+1
                        STX     $81
 L810B:                 JMP     L838F
-S810E:                 JSR     S835B
+S810E:                 JSR     newline
                        LDA     #>errors
                        STA     $2B
                        LDA     #<errors
@@ -126,13 +129,13 @@ L8125:                 LDA     ($2B),Y
                        BNE     L811F
 L8132:                 LDA     ($2B),Y
                        BEQ     L813B
-                       JSR     S815D
+                       JSR     print_token
                        BNE     L8132
 L813B:                 LDA     erflag
                        CMP     #$1D
                        BNE     L8146
                        LDA     $69
-                       JSR     S815D
+                       JSR     print_token
 L8146:                 LDA     $3E
                        BMI     L815A
                        LDY     #$08
@@ -142,45 +145,45 @@ L814C:                 LDA     atline,Y
                        BPL     L814C
                        LDX     #$00
                        JSR     S81F8
-L815A:                 JMP     S835B
-S815D:                 STA     $67
+L815A:                 JMP     newline
+print_token:           STA     $67
                        CMP     #$01
                        BEQ     L81A3
                        TAX
                        BPL     L81A0
-                       LDA     #>tokens
+                       LDA     #>tokens     ; Setup address of token table.
                        STA     $29
                        LDA     #<tokens
                        STA     $2A
-                       LDA     #$FD
+                       LDA     #$FD         ; Number of highest token.
                        STA     $6D
                        LDX     #$00
 L8174:                 LDA     $67
-                       CMP     $6D
+                       CMP     $6D          ; Found it?
                        BNE     L8186
-L817A:                 LDA     ($29,X)
-                       BMI     L8195
-                       JSR     outchr
-                       JSR     S89BD
+L817A:                 LDA     ($29,X)      ; Get a character from table.
+                       BMI     L8195        ; Last character has bit7 set.
+                       JSR     outchr       ; Output the character.
+                       JSR     inc29
                        BNE     L817A
-L8186:                 LDA     ($29,X)
+L8186:                 LDA     ($29,X)      ; Skip until end character.
                        PHP
-                       JSR     S89BD
+                       JSR     inc29
                        PLP
                        BPL     L8186
-                       DEC     $6D
+                       DEC     $6D          ; Adjust count.
                        BMI     L8174
                        BPL     L81A3
-L8195:                 AND     #$7F
+L8195:                 AND     #$7F         ; Clear bit7 of last character.
                        CMP     #':'
-                       BEQ     L81A0
-                       JSR     outchr
+                       BEQ     L81A0        ; All tokens other than ':' get
+                       JSR     outchr       ; a space after.
                        LDA     #' '
 L81A0:                 JSR     outchr
 L81A3:                 CPY     txtoff
                        BEQ     L81A9
                        BCS     L81AD
-L81A9:                 LDA     $0B
+L81A9:                 LDA     count
                        STA     $25
 L81AD:                 INY
                        RTS
@@ -189,35 +192,35 @@ S81AF:                 JSR     S832B
                        ROR     $76
                        LDY     #$04
                        BIT     $3E
-                       BPL     S81C1
+                       BPL     list_line
                        LDA     txtptr+1
                        CMP     page+1
                        BCC     L81D2
-S81C1:                 JSR     S81F6
+list_line:             JSR     S81F6        ; Print the line number.
                        LDY     #$04
-                       BIT     $76
-                       BMI     L81D2
-                       LDA     (txtptr),Y
-                       ASL     
-                       ORA     #$01
-                       JSR     S8347
+                       BIT     $76          ; LIST or EDIT?
+                       BMI     L81D2        ; Skip spaces if EDIT.
+                       LDA     (txtptr),Y   ; Get the indent.
+                       ASL
+                       ORA     #$01         ; One more space after the
+                       JSR     print_spaces ; line number.
 L81D2:                 INY
 L81D3:                 LDA     (txtptr),Y
                        CMP     #$0D
-                       BEQ     L815A
+                       BEQ     L815A        ; Finish with a newline.
                        BIT     $76
-                       BPL     L81E8
+                       BPL     L81E8        ; Branch if LIST.
                        CMP     #$FE
                        BNE     L81E8
                        LDA     #$CB
-                       JSR     S815D
+                       JSR     print_token
                        LDA     (txtptr),Y
-L81E8:                 JSR     S815D
-                       LDA     $67
+L81E8:                 JSR     print_token
+                       LDA     $67          ; Get the token back.
                        JSR     is_fnproc
-                       BNE     L81D3
+                       BNE     L81D3        ; Not PROC/FUNC
                        INY
-                       INY
+                       INY                  ; Skip two bytes after PROC/FUNC.
                        BNE     L81D3
 S81F6:                 LDX     #$05
 S81F8:                 LDY     #$02
@@ -241,7 +244,7 @@ S8205:                 LDA     #$05
                        BEQ     L8221
                        SEC
                        SBC     $4F
-                       JSR     S8347
+                       JSR     print_spaces
 L8221:                 LDX     #$00
                        BEQ     L822C
 L8225:                 LDA     $0600,X
@@ -279,20 +282,20 @@ errors:                ASC     "Escape|@"
                        ASC     "^5|@|@"
 S832B:                 LDA     #' '
 outchr:                CMP     #$0D
-                       BEQ     S835B
+                       BEQ     newline
                        PHA
-                       LDA     $0A
+                       LDA     width
                        BEQ     L833F
-                       LDA     $0B
-                       CMP     $0A
+                       LDA     count
+                       CMP     width
                        BCC     L833F
-                       JSR     S835B
-L833F:                 INC     $0B
+                       JSR     newline
+L833F:                 INC     count
                        PLA
                        JSR     oswrch
                        SEC
                        RTS
-S8347:                 TAX
+print_spaces:          TAX
                        BEQ     L8352
                        LDA     #' '
 L834C:                 JSR     outchr
@@ -303,10 +306,10 @@ CLS:                   LDA     #$0C
                        JSR     oswrch
                        CLC
                        BCC     L835F
-S835B:                 JSR     osnewl
+newline:               JSR     osnewl       ; Start a new line on screen.
                        SEC
-L835F:                 LDA     #$00
-                       STA     $0B
+L835F:                 LDA     #$00         ; Set COUNT back to zero.
+                       STA     count
 L8363:                 RTS
 
                        ;; Main language entry point.  For normal execution
@@ -327,7 +330,7 @@ lang:                  CMP     #$01
                        INY
                        STY     $0400
                        INX                  ; X is now zero.
-                       STX     $0A
+                       STX     width
                        STX     $0402
                        STX     $0403
                        JSR     SAA41        ; More initialisation.
@@ -365,7 +368,7 @@ read_immed:            SEC
                        STY     txtptr+1
                        LDX     #$00
                        STX     txtoff
-read_line:             STA     $06A0        ; Set up an OSWORD 0 control    
+read_line:             STA     $06A0        ; Set up an OSWORD 0 control
                        STY     $06A1        ; block for reading the line.
                        LDX     #$7F
                        STX     $06A2        ; maximum length.
@@ -375,8 +378,8 @@ read_line:             STA     $06A0        ; Set up an OSWORD 0 control
                        STA     $06A3        ; minimum allowed character.
                        LDX     #$A0
                        LDY     #$06
-                       LDA     #$00
-                       STA     $0B
+                       LDA     #$00         ; Set COUNT to zero.
+                       STA     count
                        JSR     osword
                        STY     $6C          ; Store the length.
                        BCC     L8406        ; Branch if line read sucessfully.
@@ -388,13 +391,13 @@ S83FF:                 JSR     osrdch
 chkesc:                BIT     $FF
                        BMI     escape
 L8406:                 RTS
-toklin:                JSR     scan_line
-                       JSR     S8AE5
+toklin:                JSR     scan_line    ; Convert first word to a token.
+                       JSR     push_txtptr
                        JSR     S93B5
                        BCC     L8434
                        JSR     fold_offset
                        JSR     SBEF1
-                       JSR     S8AF6
+                       JSR     pop_txtptr
                        LDA     $19
                        SEC
                        SBC     txtptr
@@ -411,10 +414,10 @@ L8424:                 PHP
                        DEC     txtptr+1
 L8432:                 PLP
                        RTS
-L8434:                 JSR     S8AF6
+L8434:                 JSR     pop_txtptr
                        LDA     #$05
                        BNE     L8424
-S843B:                 JSR     S8582
+S843B:                 JSR     check_prog
                        LDA     $6C
                        BEQ     L8447
                        CLC
@@ -504,7 +507,7 @@ S84D8:                 LDA     #$00
                        STA     $3A
                        STA     $1C
                        BNE     L84F1
-S84E6:                 LDX     #$00
+parse_line_range:      LDX     #$00
                        STX     $3A
                        STX     $3B
                        DEX
@@ -544,7 +547,7 @@ S852B:                 STA     $69
                        CMP     #'*'
                        BEQ     L8551
                        JMP     LAE1E
-L8539:                 ASL     
+L8539:                 ASL
                        TAY
                        LDA     cmdtab-$7D,Y
                        PHA
@@ -583,7 +586,7 @@ L857E:                 BRK
 L857F:                 DFB     $12                                    ; .
 STOP:                  BRK
 L8581:                 DFB     $13                                    ; .
-S8582:                 JSR     S8F43
+check_prog:            JSR     S8F43
                        TXA
                        JSR     SA505
 L8589:                 LDY     #$00
@@ -622,7 +625,7 @@ EDIT:                  SEC
                        DFB     $24          ; BIT - skip the next instruction
 LIST:                  CLC
                        ROR     $76
-                       JSR     S84E6
+                       JSR     parse_line_range
                        BIT     $1D
                        BPL     L85D9
                        LDA     $3A
@@ -637,7 +640,7 @@ L85D9:                 LDA     #$00
                        PLP
                        BNE     L85F1
 L85E8:                 JSR     chkesc
-                       JSR     S81C1
+                       JSR     list_line
                        JSR     S8A01
 L85F1:                 BMI     L8600
                        LDY     #$02
@@ -676,7 +679,7 @@ S862C:                 CLC
                        ADC     $1D
                        STA     $3B
 L8639:                 RTS
-DEL:                   JSR     S8582
+DEL:                   JSR     check_prog
                        JSR     asc2bin16
                        JSR     S89E0
                        BCC     L8639
@@ -699,7 +702,7 @@ L8660:                 LDA     $29
                        BCS     L8681
 L866A:                 LDA     ($26,X)
                        STA     ($29,X)
-                       JSR     S89BD
+                       JSR     inc29
                        INC     $26
                        BNE     L8677
                        INC     $27
@@ -711,7 +714,7 @@ L8677:                 LDA     prgtop
 L8681:                 LDA     #$00
                        STA     $82
                        STA     pdbugd
-                       JSR     S8582
+                       JSR     check_prog
                        JMP     LAA63
 LOAD:                  JSR     S86CD
                        LDA     page+1
@@ -722,7 +725,7 @@ LOAD:                  JSR     S86CD
 L869C:                 JSR     osfile
                        JMP     L8681
 SAVE:                  JSR     S86CD
-                       JSR     S8582
+                       JSR     check_prog
                        LDA     page+1
                        STA     $068B
                        LDY     prgtop+1
@@ -766,7 +769,7 @@ S86F5:                 LDY     $4F
                        LDY     #$06
 L8702:                 RTS
 AUTO:                  JSR     S84D8
-                       JSR     S835B
+                       JSR     newline
 L8709:                 LDX     #$3A
                        JSR     SA43A
                        JSR     S8205
@@ -984,7 +987,7 @@ S89B6:                 CMP     #$0D
                        BEQ     L89BC
                        CMP     #$CE
 L89BC:                 RTS
-S89BD:                 INC     $29
+inc29:                 INC     $29
                        BNE     L89C3
                        INC     $2A
 L89C3:                 RTS
@@ -1137,11 +1140,11 @@ S8AC0:                 STY     $7D
                        PHA
                        LDA     $62
 L8ACB:                 PHA
-L8ACC:                 TYA
-                       PHA
+L8ACC:                 TYA                  ; Put return address back
+                       PHA                  ; on the stack.
                        TXA
                        PHA
-                       LDX     $67
+                       LDX     $67          ; Restore X
                        LDY     $7D
                        CLC
                        RTS
@@ -1155,29 +1158,29 @@ S8AD6:                 STY     $7D
                        PLA
                        STA     $63
                        JMP     L8ACC
-S8AE5:                 STX     $67
-                       PLA
-                       TAX
+push_txtptr:           STX     $67          ; Save X.
+                       PLA                  ; Stash the return address
+                       TAX                  ; in X and Y.
                        PLA
                        TAY
-                       LDA     txtoff
-                       PHA
+                       LDA     txtoff       ; Push text offset and
+                       PHA                  ; pointer to stack.
                        LDA     txtptr+1
                        PHA
                        LDA     txtptr
-                       JMP     L8ACB
-S8AF6:                 STX     $67
-                       PLA
-                       TAX
+                       JMP     L8ACB        ; Common tail.
+pop_txtptr:            STX     $67          ; Save X.
+                       PLA                  ; Stash the return address
+                       TAX                  ; in X and Y.
                        PLA
                        TAY
-                       PLA
-                       STA     txtptr
+                       PLA                  ; Pull the text offset and
+                       STA     txtptr       ; pointer from the stack.
                        PLA
                        STA     txtptr+1
                        PLA
                        STA     txtoff
-                       JMP     L8ACC
+                       JMP     L8ACC        ; Common tail.
 S8B08:                 LDY     $28
                        DEY
                        LDA     ($36),Y
@@ -1320,23 +1323,23 @@ token_found:           LDA     $6D          ; Get token number.
 token_notfnp:          INY                  ; Skip spaces after token.
                        LDA     ($2B),Y
                        CMP     #' '
-                       BEQ     token_notfnp    
-                       DEY         
-                       JSR     get_next_2b    
+                       BEQ     token_notfnp
+                       DEY
+                       JSR     get_next_2b
                        TYA                  ; Set up a 2nd pointer.
-                       CLC         
-                       ADC     $2B      
+                       CLC
+                       ADC     $2B
                        STA     $29          ; Move the rest of the line down
                        LDA     #$00         ; to close the gap.
-                       TAY         
-                       ADC     $2C      
-                       STA     $2A      
-token_movelp:          LDA     ($29),Y  
-                       STA     ($2B),Y  
-                       INY         
-                       CMP     #$0D     
-                       BNE     token_movelp    
-                       BEQ     L8C72  
+                       TAY
+                       ADC     $2C
+                       STA     $2A
+token_movelp:          LDA     ($29),Y
+                       STA     ($2B),Y
+                       INY
+                       CMP     #$0D
+                       BNE     token_movelp
+                       BEQ     L8C72
 token_abcheck:         LDA     ($2B),Y      ; Is it an abbreviation?
                        CMP     #'.'
                        BEQ     token_found
@@ -1366,23 +1369,25 @@ L8C5F:                 JSR     get_next_2b
 L8C6F:                 JMP     scan_next
 L8C72:                 DEY
                        LDA     $6D
-                       CMP     #$CE
+                       CMP     #$CE         ; // Token.
                        BCC     L8C7D
-                       CMP     #$D5
+                       CMP     #$D5         ; DIM token.
                        BCC     L8C88
-L8C7D:                 CMP     #$8C
+L8C7D:                 CMP     #$8C         ; DO token.
                        BEQ     L8C8B
-                       CMP     #$93
+                       CMP     #$93         ; THEN token.
                        BEQ     L8C8B
                        JMP     scanner
 L8C88:                 JMP     scan_endline
 L8C8B:                 JMP     scan_notspace
+
 get_lcase2b:           LDA     ($2B),Y
                        JSR     islc
                        BCS     L8C99
                        ORA     #$20
                        STA     ($2B),Y
 L8C99:                 RTS
+
 cmdtab:                DFW     PSEUDO-1, PSEUDO-1, PSEUDO-1, PSEUDO-1
                        DFW     PSEUDO-1, CLEAR-1,  NULL-1,   CLG-1
                        DFW     CLS-1,    NEW-1,    STOP-1,   RESTOR-1
@@ -1426,7 +1431,7 @@ S8D47:                 LDX     pdbugd
                        RTS
 DEBUG:                 LDA     #$FF
 L8D4E:                 STA     $28
-                       JSR     S8582
+                       JSR     check_prog
                        JSR     S8F43
                        STX     lstkp
                        STX     $0500
@@ -1575,7 +1580,7 @@ L8E83:                 JSR     S8F08
                        BCC     L8E83
 L8E8C:                 LDA     #$19
                        JSR     S8065
-L8E91:                 JSR     S8582
+L8E91:                 JSR     check_prog
                        JSR     S902F
 L8E97:                 DEC     lstkp
                        DEC     lstkp
@@ -1625,7 +1630,7 @@ L8ED2:                 CPX     lstkp
                        JSR     S8EB4
                        LDA     $28
                        BEQ     L8EF3
-                       JSR     S81C1
+                       JSR     list_line
 L8EF3:                 DEC     $6B
                        PLA
                        TAX
@@ -1782,13 +1787,23 @@ S902F:                 LDY     $3C
                        LDY     $3D
                        STY     $27
                        RTS
-toknos:                DFB     $21, $22, $2A, $2B, $3F, $40, $61, $7B ; !"*+?@a{
+
+                       ;; Tables for argument parsing.
+                       ;;
+                       ;; The first three tables, at least, seem to be
+                       ;; the same size - a token number as it appears
+                       ;; in a program can be looked up in the first
+                       ;; table and the index then used for one of the
+                       ;; other two tables.
+
+token_numbers:         DFB     $21, $22, $2A, $2B, $3F, $40, $61, $7B ; !"*+?@a{
                        DFB     $BF, $C4, $C9, $CA, $CB, $CC, $CD, $CE ; ........
                        DFB     $CF, $D0, $D1, $D3, $D5, $D6, $D7, $D8 ; ........
                        DFB     $D9, $DA, $DB, $DC, $DD, $E0, $E1, $E2 ; ........
                        DFB     $E3, $E4, $E5, $E6, $E7, $E8, $E9, $EB ; ........
                        DFB     $EC, $ED, $EE, $EF, $F0, $F1, $F2, $F3 ; ........
                        DFB     $F4, $F5, $F9, $FC, $FE, $00           ; ......
+
 D906E:                 DFB     $9D, $40, $D0, $CF, $D0, $40, $D0, $0C ; .@...@..
                        DFB     $D0, $BD, $9D, $9D, $17, $32, $5E, $4E ; .....2^N
                        DFB     $CF, $6D, $0B, $58, $58, $59, $61, $4D ; .m.XXYaM
@@ -1796,13 +1811,15 @@ D906E:                 DFB     $9D, $40, $D0, $CF, $D0, $40, $D0, $0C ; .@...@..
                        DFB     $6F, $6F, $6F, $E4, $22, $5F, $6E, $9D ; ooo."_n.
                        DFB     $91, $5A, $B4, $B0, $44, $9D, $57, $4A ; .Z..D.WJ
                        DFB     $4B, $08, $05, $9D, $D0, $CF           ; K.....
-D90A4:                 DFB     $E0, $F0, $00, $F0, $00, $F0, $00, $E0 ; ........
+
+token_flags:           DFB     $E0, $F0, $00, $F0, $00, $F0, $00, $E0 ; ........
                        DFB     $00, $F0, $F0, $D0, $70, $F0, $50, $90 ; ....p.P.
                        DFB     $E0, $50, $F0, $90, $F0, $F0, $D0, $F0 ; .P......
                        DFB     $F0, $F0, $F0, $F0, $F0, $E2, $E3, $E4 ; ........
                        DFB     $EE, $E1, $41, $50, $50, $70, $50, $50 ; ..APPpPP
                        DFB     $50, $50, $50, $50, $50, $50, $D0, $D0 ; PPPPPP..
                        DFB     $D0, $F0, $90, $90, $FF, $40
+
 D90DA:                 DFB     $3D, $3E ; .....@=>
                        DFB     $3C
 D90DD:                 DFB     $2B, $2D, $2A, $2F, $86, $88, $5E ; <+-*/..^
@@ -1909,12 +1926,12 @@ D9315:                 DFB     $3A, $2B, $9D, $62, $62, $AA, $9D, $9D ; :+.bb...
                        DFB     $DF, $E2, $D0, $CF, $EE, $E6, $D0, $D0 ; ........
                        DFB     $D0, $D0, $EB, $CF, $CF, $9A, $EF, $F0 ; ........
                        DFB     $F2, $D0, $9D
-L93A0:                 JSR     fold_offset    
-                       JSR     S963F    
+L93A0:                 JSR     fold_offset
+                       JSR     token2index
                        LDA     #$20
-                       AND     D90A4,Y  
-                       BEQ     L93AF    
-                       BNE     L93BF    
+                       AND     token_flags,Y
+                       BEQ     L93AF
+                       BNE     L93BF
 L93AF:                 LDA     #$1B
                        STA     erflag
                        SEC
@@ -1922,28 +1939,28 @@ L93AF:                 LDA     #$1B
 S93B5:                 LDA     #$16
                        STA     erflag
                        JSR     get_non_space
-                       JSR     S963F
+                       JSR     token2index
 L93BF:                 LDA     $3E
-                       AND     D90A4,Y
+                       AND     token_flags,Y
                        BEQ     L93AF
-                       LDA     D90A4,Y
+                       LDA     token_flags,Y
                        AND     #$10
                        BEQ     L93CF
                        INC     txtoff
 L93CF:                 LDA     D906E,Y
 L93D2:                 TAY
 S93D3:                 LDA     txtoff
-                       PHA
+                       PHA                  ; STK: txtoff
                        TYA
-                       PHA
+                       PHA                  ; STK: txtoff D906E
                        LDY     txtoff
                        LDA     (txtptr),Y
                        STA     $6A
-                       PLA
-                       PHA
+                       PLA                  ; STK: txtoff
+                       PHA                  ; STK: txtoff D906E
                        TAY
                        TSX
-                       CPX     #$20
+                       CPX     #' '         ; Branch if token >= space
                        BCS     L93EE
                        LDA     #$1C
                        STA     erflag
@@ -1974,7 +1991,7 @@ L9413:                 STX     $35
                        BEQ     L9454
                        JSR     S944B
 L941D:                 LDA     #$00
-                       ROR     
+                       ROR
 L9420:                 STA     $7E
                        PLA
                        TAY
@@ -2017,9 +2034,9 @@ L945D:                 LDY     $34
                        RTS
                        LDY     #$00
                        DFB     $2C          ; BIT - skip the next instruction.
-L9470:                 LDY     #$68                       
+L9470:                 LDY     #$68
                        DFB     $2C          ; BIT - skip the next instruction.
-L9473:                 LDY     #$37                       
+L9473:                 LDY     #$37
                        DFB     $2C          ; BIT - skip the next instruction.
 L9476:                 LDY     #$18
                        DFB     $2C          ; BIT - skip the next instruction.
@@ -2049,7 +2066,7 @@ L949C:                 PLA
                        TAX
                        SEC
                        DFB     $24          ; BIT - skip the next instruction.
-L94A0:                 CLC                       
+L94A0:                 CLC
                        PLA
                        TAY
                        RTS
@@ -2140,7 +2157,7 @@ L9540:                 DEY
                        INC     txtoff
                        BNE     L952A
                        LDA     $3E
-                       ASL     
+                       ASL
 L9552:                 RTS
                        CMP     #$C4
                        BCS     L9552
@@ -2204,8 +2221,8 @@ L95AD:                 INC     txtoff
 S95C0:                 LDA     #'"'
                        JMP     S9622
                        INC     txtoff
-                       JSR     S963F
-                       LDA     D90A4,Y
+                       JSR     token2index
+                       LDA     token_flags,Y
                        AND     #$0F
                        TAX
                        LDY     #$47
@@ -2276,11 +2293,11 @@ L9627:                 LDA     (txtptr),Y
                        INC     txtoff
                        CLC
                        RTS
-S963F:                 LDA     $6A
+token2index:           LDA     $6A
                        LDY     #$00
-L9643:                 CMP     toknos,Y
+L9643:                 CMP     token_numbers,Y
                        BCC     L9655
-                       LDX     toknos,Y
+                       LDX     token_numbers,Y
                        BEQ     L9655
                        INY
                        BNE     L9643
@@ -2405,9 +2422,9 @@ L96FF:                 JSR     S9C33
                        CMP     $4B
                        BNE     L9731
 L9730:                 RTS
-L9731:                 ROR     
+L9731:                 ROR
                        EOR     $54
-                       ROL     
+                       ROL
                        LDA     #$01
                        RTS
 S9738:                 PHP
@@ -2654,10 +2671,10 @@ L9922:                 CPX     #$00
                        BEQ     L994D
 L9926:                 RTS
 S9927:                 LDA     $48
-                       LSR     
-                       LSR     
-                       LSR     
-                       LSR     
+                       LSR
+                       LSR
+                       LSR
+                       LSR
                        JSR     S994B
                        LDA     $48
                        AND     #$0F
@@ -2804,10 +2821,10 @@ L9A39:                 JSR     S9962
                        INY
                        STA     $5C
                        LDA     $61
-                       ASL     
-                       ASL     
+                       ASL
+                       ASL
                        ADC     $61
-                       ASL     
+                       ASL
                        ADC     $5C
                        RTS
 L9A53:                 LDA     $61
@@ -2841,12 +2858,12 @@ L9A7A:                 PHA
                        LDA     $4A
                        PHA
                        LDA     $4C
-                       ASL     
+                       ASL
                        ROL     $4B
                        ROL     $4A
                        ROL     $49
                        ROL     $48
-                       ASL     
+                       ASL
                        ROL     $4B
                        ROL     $4A
                        ROL     $49
@@ -2868,7 +2885,7 @@ L9A7A:                 PHA
                        ROL     $4B
                        ROL     $4A
                        ROL     $49
-                       ROL     
+                       ROL
                        STA     $48
                        PLA
                        RTS
@@ -2954,7 +2971,7 @@ L9B3B:                 JSR     S9B22
                        LDA     $4B
                        STA     $5B
                        LDA     $4C
-                       ROL     
+                       ROL
                        JSR     S9AEB
                        LDA     #$00
                        STA     $57
@@ -2966,10 +2983,10 @@ L9B3B:                 JSR     S9B22
                        LDA     $4A
                        STA     $5B
                        LDA     $4B
-                       ROL     
+                       ROL
                        JSR     S9AEB
                        LDA     $49
-                       ROL     
+                       ROL
                        LDA     $48
 S9B87:                 ADC     $4C
                        STA     $4C
@@ -3278,9 +3295,9 @@ S9DCD:                 JSR     S9ABD
                        PHA
                        AND     #$38
                        BEQ     L9DFF
-                       LSR     
-                       LSR     
-                       LSR     
+                       LSR
+                       LSR
+                       LSR
                        TAX
 L9DEA:                 LDA     $5A
                        STA     $5B
@@ -3313,9 +3330,9 @@ L9E14:                 SEC
                        PHA
                        AND     #$38
                        BEQ     L9E3B
-                       LSR     
-                       LSR     
-                       LSR     
+                       LSR
+                       LSR
+                       LSR
                        TAX
 L9E26:                 LDA     $4B
                        STA     $4C
@@ -3619,7 +3636,7 @@ FSQR:                  JSR     S9ABD
                        BMI     LA050
                        JSR     S9C68
                        LDA     $47
-                       LSR     
+                       LSR
                        ADC     #$40
                        STA     $47
                        LDA     #$05
@@ -3853,8 +3870,8 @@ LA2CA:                 BRK
                        DFB     $1C
 FA2CC                  DFB     $81, $C9, $10, $00, $00
 FA2D1:                 DFB     $6F, $15, $77, $7A, $61
-FA2D6:                 DFB     $81, $49, $0F, $DA, $A2
-SA2DB:                 LDA     #>FA2D6
+F_PI:                  DFB     $81, $49, $0F, $DA, $A2
+SA2DB:                 LDA     #>F_PI
                        BNE     LA2E5
 SA2DF:                 LDA     #>FA2D1
                        BNE     LA2E5
@@ -4020,11 +4037,11 @@ LA44F:                 LDA     $2F,X
                        JMP     L9F2C
 SA459:                 LDY     #$20
 LA45B:                 LDA     $31
-                       LSR     
-                       LSR     
-                       LSR     
+                       LSR
+                       LSR
+                       LSR
                        EOR     $33
-                       ROR     
+                       ROR
                        ROL     $2F
                        ROL     $30
                        ROL     $31
@@ -4158,17 +4175,17 @@ LA549:                 JSR     SB304
                        STX     $70
                        LDA     $0400
                        BEQ     LA549
-                       LDA     $0B
+                       LDA     count
 LA55D:                 SBC     $0400
                        BEQ     LA549
                        BCS     LA55D
                        EOR     #$FF
                        ADC     #$01
-                       JSR     S8347
+                       JSR     print_spaces
                        BEQ     LA549
 LA56D:                 CPX     #$27
                        BNE     LA576
-                       JSR     S835B
+                       JSR     newline
                        BCS     LA545
 LA576:                 CPX     #$92
                        BNE     LA5A5
@@ -4182,14 +4199,14 @@ LA576:                 CPX     #$92
                        LDA     #$1F
                        JSR     oswrch
                        PLA
-                       STA     $0B
+                       STA     count
                        JSR     oswrch
                        LDA     $41
                        JSR     oswrch
                        JMP     LA545
-LA59C:                 SBC     $0B
+LA59C:                 SBC     count
                        BCC     LA545
-                       JSR     S8347
+                       JSR     print_spaces
                        BEQ     LA545
 LA5A5:                 CPX     #$95
                        BNE     LA5D1
@@ -4218,7 +4235,7 @@ LA5D1:                 JSR     S89B1
                        BEQ     LA5E3
                        CMP     #';'
                        BEQ     LA5E3
-                       JSR     S835B
+                       JSR     newline
 LA5E3:                 LDX     #$00
 LA5E5:                 PLA
                        STA     $0400,X
@@ -4239,7 +4256,7 @@ LA5F0:                 LDA     $70
                        LDA     $0400
                        BEQ     LA61C
                        SEC
-                       LDA     $0B
+                       LDA     count
 LA609:                 BEQ     LA610
                        SBC     $0400
                        BCS     LA609
@@ -4248,13 +4265,13 @@ LA610:                 CLC
                        SEC
                        SBC     $4F
                        BCC     LA61C
-                       JSR     S8347
+                       JSR     print_spaces
 LA61C:                 PLA
                        STA     $70
                        JSR     L8221
                        DEC     txtoff
                        JMP     LA545
-SA627:                 JSR     S8AE5
+SA627:                 JSR     push_txtptr
                        TSX
                        STX     $2D
                        JSR     SAAB9
@@ -4361,7 +4378,7 @@ LA6FA:                 BRK
 LA6FB:                 DFB     $22                                    ; "
 READ:                  CPX     #$8D
 LA6FE:                 BEQ     LA75E
-                       LDA     $2E
+                       LDA     eodflag
                        BMI     LA6FA
                        LDX     #$7A
                        STX     $18
@@ -4376,7 +4393,7 @@ LA6FE:                 BEQ     LA75E
                        JSR     S8A72
                        LDA     #$00
                        SBC     #$00
-                       STA     $2E
+                       STA     eodflag
                        INY
                        STY     txtoff
                        JSR     S8AA0
@@ -4401,7 +4418,7 @@ LA746:                 JSR     S8A72
                        STA     $7B
                        LDA     #$00
 LA758:                 SBC     #$00
-                       STA     $2E
+                       STA     eodflag
                        CLC
                        RTS
 LA75E:                 JSR     SA963
@@ -4560,7 +4577,7 @@ LA897:                 LDX     $71
                        JSR     SA8BC
                        JMP     LA84C
 LA8AC:                 BRK
-LA8AD:                 DFB     $20                                    ;  
+LA8AD:                 DFB     $20                                    ;
 CLOSE:                 JSR     S89B1
                        BEQ     LA8C3
                        JSR     SAA2F
@@ -4732,9 +4749,9 @@ SAA01:                 JSR     SB2E8
 SAA04:                 LDA     $41
                        CMP     #$06
                        BCS     LAA12
-                       ASL     
-                       ASL     
-                       ASL     
+                       ASL
+                       ASL
+                       ASL
                        TAX
                        LDA     $04B6,X
                        RTS
@@ -4837,15 +4854,15 @@ SAAB9:                 LDA     #$FF
                        CPY     #$03
                        BNE     LAAE6
                        TXA
-                       ASL     
-                       ASL     
+                       ASL
+                       ASL
                        STA     $62
                        LDA     #$04
                        STA     $63
                        INC     txtoff
                        JMP     SB304
 LAAE6:                 TXA
-                       ASL     
+                       ASL
                        TAY
                        LDA     $0400,Y
                        STA     $62
@@ -4998,7 +5015,7 @@ LAC10:                 LDA     aestkp
                        STA     locall+1
                        RTS
 LAC19:                 BRK
-LAC1A:                 DFB     $20                                    ;  
+LAC1A:                 DFB     $20                                    ;
 LAC1B:                 BRK
 LAC1C:                 DFB     $14                                    ; .
 SAC1D:                 LDA     #$01
@@ -5273,7 +5290,7 @@ LADF4:                 LDA     localh
 LAE0E:                 LDA     #$16
                        JSR     oswrch
                        LDA     #$00
-                       STA     $0B
+                       STA     count
                        LDA     $41
                        JMP     LBAEC
 PSEUDO:                DEC     txtoff
@@ -5310,7 +5327,7 @@ LAE45:                 LDX     #$01
                        DEC     $79
 LAE5B:                 SEC
                        SBC     #$BD
-                       ASL     
+                       ASL
                        TAX
                        LDA     #$00
                        BEQ     LAE8B
@@ -5379,7 +5396,7 @@ LAED8:                 INY
                        CMP     #$96
                        BEQ     LAEE9
                        BRK
-LAEE4:                 DFB     $20                                    ;  
+LAEE4:                 DFB     $20                                    ;
 LAEE5:                 BRK
 LAEE6:                 DFB     $1B                                    ; .
 LAEE7:                 BRK
@@ -5772,7 +5789,7 @@ LB1DC:                 JSR     SB1E4
 SB1E4:                 LDY     #$01
                        LDA     ($62),Y
                        AND     #$DF
-                       ASL     
+                       ASL
                        TAX
                        LDA     $0401,X
                        STA     ($62),Y
@@ -6370,7 +6387,7 @@ LB6B4:                 LDY     #$03
 SB6CB:                 CMP     #'-'
                        BCS     LB706
                        JSR     SB304
-                       ASL     
+                       ASL
                        TAY
                        LDA     funtab+1,Y
                        PHA
@@ -6439,7 +6456,7 @@ LB74C:                 JSR     S896A
                        JSR     SAAB9
                        BCC     LB758
                        BRK
-LB757:                 DFB     $20                                    ;  
+LB757:                 DFB     $20                                    ;
 LB758:                 CMP     #$01
                        BNE     LB762
                        JSR     SBD61
@@ -6458,12 +6475,12 @@ LB775:                 LDA     (txtptr),Y
                        CMP     #'9'+1
                        BCC     LB782
                        SBC     #$37
-LB782:                 ASL     
-                       ASL     
-                       ASL     
-                       ASL     
+LB782:                 ASL
+                       ASL
+                       ASL
+                       ASL
                        LDX     #$03
-LB788:                 ASL     
+LB788:                 ASL
                        ROL     $41
                        ROL     $42
                        ROL     $43
@@ -6514,10 +6531,10 @@ LB7E2:                 LDA     $0041,Y
                        AND     #$0F
                        STA     $54,X
                        PLA
-                       LSR     
-                       LSR     
-                       LSR     
-                       LSR     
+                       LSR
+                       LSR
+                       LSR
+                       LSR
                        INX
                        STA     $54,X
                        INX
@@ -6572,12 +6589,12 @@ SB855:                 JSR     S9ABD
                        BEQ     FFALSE
                        BPL     SB86A
 LB85C:                 JMP     FTRUE
-FEOD:                  LDA     $2E
+FEOD:                  LDA     eodflag
 LB861:                 BMI     LB85C
                        DFB     $2C          ; BIT - skips the next instruction.
-FWIDTH:                LDA     $0A
+FWIDTH:                LDA     width
                        DFB     $2C          ; BIT - skips the next instruction.
-FCOUNT:                LDA     $0B
+FCOUNT:                LDA     count
                        DFB     $2C          ; BIT - skips the next instruction.
 SB86A:                 LDA     #$01
                        DFB     $2C          ; BIT - skips the next instruction.
@@ -6661,7 +6678,7 @@ FADVAL:                LDY     #$FF
                        JMP     LB878
 SB915:                 JMP     ($0041)
 FUSR:                  LDA     $040C
-                       LSR     
+                       LSR
                        LDX     $0460
                        LDY     $0464
                        LDA     $0404
@@ -6689,7 +6706,7 @@ LB94E:                 JSR     osbyte
                        JMP     SB872
 FVAL:                  JSR     S86F5
                        JSR     SB317
-                       JSR     S8AE5
+                       JSR     push_txtptr
                        TSX
                        LDA     $2D
                        PHA
@@ -6714,7 +6731,7 @@ LB974:                 JSR     txtptr_to2b
                        JSR     LB025
                        PLA
                        STA     $2D
-                       JSR     S8AF6
+                       JSR     pop_txtptr
                        LDA     $7D
                        JMP     get_non_space
 LB998:                 LDA     erflag
@@ -6847,7 +6864,7 @@ SBAE2:                 LDA     $41
                        JSR     oswrch
                        LDA     $42
                        DFB     $2C          ; BIT - skip the next instruction.
-CLG                    LDA     #$10                       
+CLG                    LDA     #$10
 LBAEC:                 JSR     oswrch
                        CLC
                        RTS
@@ -7034,7 +7051,7 @@ LBC3E:                 JSR     S8AC0
                        JSR     S8AD6
                        JSR     L96FF
 LBC55:                 BEQ     LBC65
-                       ROR     
+                       ROR
                        EOR     $7E
                        BPL     LBC65
                        SEC
@@ -7183,7 +7200,7 @@ EXEC:                  JSR     SAD14
 SBD7F:                 LDA     pdbugd
                        BNE     LBD87
                        BRK
-LBD84:                 DFB     $20                                    ;  
+LBD84:                 DFB     $20                                    ;
 LBD85:                 BRK
                        DFB     $20
 LBD87:                 TSX
@@ -7484,7 +7501,7 @@ IMPORT:                JSR     SAAB6
                        STA     closed
                        BCC     LBFD6
                        BRK
-LBFD3:                 DFB     $20                                    ;  
+LBFD3:                 DFB     $20                                    ;
 LBFD4:                 BRK
                        DFB     $26
 LBFD6:                 PLA
@@ -7507,4 +7524,4 @@ LBFEB:                 PLA
                        BEQ     IMPORT
                        CLC
                        JMP     LAC10
-                       ROL     
+                       ROL
