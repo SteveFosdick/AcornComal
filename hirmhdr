@@ -1,6 +1,7 @@
                        ORG     $B800
 HIGH                   EQU     1
 start:                 JMP     lang
+                       ORG     *-$B800+$8000
                        JMP     serv
                        DFB     %11100010    ; ROM type.
                        DFB     copyr-start
@@ -11,4 +12,5 @@ copyr:                 DFB     $00
                        DFB     $00
                        DFW     start
                        INCLUDE service
+                       ORG     *-$8000+$B800
                        CHN     source
