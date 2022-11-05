@@ -15,11 +15,11 @@ comal.dis: comal.rom labels
 #	$(CCDIS) -a > comal.asm
 
 lowrom: lowhdr service source
-	laxasm -l lowlst -o lowrom lowhdr
+	laxasm -l lowlst -o lowrom -d lowhdr > lowsym
 	cmp lowrom comal.rom
 
 hirom: hirmhdr service source
-	laxasm -l hirmlst -o hirom hirmhdr
+	laxasm -l hirmlst -o hirom -d hirmhdr > hirmsym
 
 hifile: hifihdr source
-	laxasm -l hifilst -o hifile hifihdr
+	laxasm -l hifilst -o hifile -d hifihdr > hifisym
